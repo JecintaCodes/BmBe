@@ -7,7 +7,7 @@ interface iOrder {
   description?: string;
   amountPaid: number;
   QTYOrder: number;
-
+  address: string;
   userID: string;
   users: {};
 }
@@ -38,6 +38,9 @@ const orderModel = new Schema(
       type: Number,
     },
 
+    address: {
+      type: String,
+    },
     QTYOrder: {
       type: Number,
       default: 0,

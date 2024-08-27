@@ -1,12 +1,20 @@
-import express, { Application, Request, Response } from "express";
+import express, { Application, Request, Response, NextFunction } from "express";
 import cors from "cors";
 import helmet from "helmet";
 import morgan from "morgan";
 import userRouter from "./router/userRouter";
 import productRouter from "./router/productRouter";
+import paymentRouter from "./router/paymentRouter";
 
 export const mainApp = (app: Application) => {
-  app.use(cors());
+  app.use((req: Request, res: Response, next: NextFunction) => {
+    res.header("Access-Control-Allow-Origin", "*");
+    res.header("Access-Control-Allow-Credentials", "true");
+    res.header("Access-Control-Allow-Methods", "GET, PUT, PATCH, POST, DELETE");
+    res.header("Access-Control-Allow-Headers", "Content-Type");
+    next();
+  });
+  app.use(cors({ origin: ["*"] }));
   app.use(express.json());
 
   app.use(morgan("dev"));
@@ -14,7 +22,7 @@ export const mainApp = (app: Application) => {
 
   app.use("/api/v1", userRouter);
   app.use("/api/v1", productRouter);
-  // app.use("/api/v1", storeRouter);
+  app.use("/api/v1", paymentRouter);
 
   app.get("/", (req: Request, res: Response) => {
     try {

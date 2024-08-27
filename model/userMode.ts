@@ -7,17 +7,24 @@ interface iUser {
   imageID?: string;
   password: string;
   secretCode: string;
+  address: string;
   description?: string;
   products: {}[];
   myStore: {}[];
   order: {}[];
   verify: boolean;
+  verifyToken: string;
+  lists: {}[];
 }
 
 interface iUserData extends iUser, Document {}
 
-const userModel = new Schema(
+const userModel = new Schema<iUserData>(
   {
+    address: {
+      type: String,
+      require: true,
+    },
     name: {
       type: String,
       require: true,
@@ -36,6 +43,9 @@ const userModel = new Schema(
     },
 
     role: {
+      type: String,
+    },
+    verifyToken: {
       type: String,
     },
     image: {
@@ -63,6 +73,12 @@ const userModel = new Schema(
       {
         type: Types.ObjectId,
         ref: "prods",
+      },
+    ],
+    lists: [
+      {
+        type: Types.ObjectId,
+        ref: "lists",
       },
     ],
 

@@ -5,6 +5,7 @@ import { streamUpload } from "../utils/stream";
 import { HTTP } from "../error/mainError";
 import { Types } from "mongoose";
 import orderModel from "../model/orderModel";
+import listModel from "../model/listModel";
 
 export const createProduct = async (req: Request, res: Response) => {
   try {
@@ -131,6 +132,7 @@ export const purchaseProduct = async (req: Request, res: Response) => {
           img: product.img,
           description: product.description,
           amountPaid: QTYOrder * product.amount,
+          address: productBuyer?.address,
         });
 
         // update entries
@@ -167,7 +169,7 @@ export const viewOrders = async (req: Request, res: Response) => {
     const { userID } = req.params;
 
     const orders = await userModel.findById(userID).populate({
-      path: "order",
+      path: "orders",
       options: {
         sort: {
           createdAt: -1,
@@ -227,6 +229,115 @@ export const deleteProduct = async (req: Request, res: Response) => {
   } catch (error) {
     return res.status(HTTP.BAD_REQUEST).json({
       message: `error deleting product ${error}`,
+    });
+  }
+};
+
+export const createProductList = async (req: Request, res: Response) => {
+  try {
+    const { userID } = req.params;
+    const { title, amount } = req.body;
+
+    const user = await userModel.findById(userID);
+
+    if (user) {
+      const list = await listModel.create({
+        title,
+        amount,
+        userID: user?._id,
+      });
+      user?.lists?.push(list);
+      user?.save();
+
+      return res.status(HTTP.CREATED).json({
+        message: "list created",
+        data: list,
+      });
+    } else {
+      return res.status(HTTP.BAD_REQUEST).json({
+        message: `you are not a user`,
+      });
+    }
+  } catch (error) {
+    return res.status(HTTP.BAD_REQUEST).json({
+      message: `error creating product ${error}`,
+    });
+  }
+};
+export const addProductList = async (req: Request, res: Response) => {
+  try {
+    const { userID } = req.params;
+    const { title, amount } = req.body;
+
+    const user = await userModel.findById(userID);
+
+    if (user) {
+      const list = await listModel.findByIdAndUpdate(
+        {
+          title,
+          amount,
+        }
+        // { new: true }
+      );
+
+      return res.status(HTTP.CREATED).json({
+        message: "added list",
+        data: list,
+      });
+    } else {
+      return res.status(HTTP.BAD_REQUEST).json({
+        message: `you are not a user`,
+      });
+    }
+  } catch (error) {
+    return res.status(HTTP.BAD_REQUEST).json({
+      message: `error adding product ${error}`,
+    });
+  }
+};
+export const getLists = async (req: Request, res: Response) => {
+  try {
+    const { userID } = req.params;
+    const list = await userModel.findById(userID).populate({
+      path: "lists",
+      options: {
+        sort: {
+          createdAt: -1,
+        },
+      },
+    });
+
+    return res.status(HTTP.OK).json({
+      message: "all user gotten list",
+      data: list,
+    });
+  } catch (error) {
+    return res.status(HTTP.BAD_REQUEST).json({
+      message: `error creating product ${error}`,
+    });
+  }
+};
+export const deleteProductList = async (req: Request, res: Response) => {
+  try {
+    const { userID, listID } = req.params;
+
+    const user = await userModel.findById(userID);
+
+    if (user) {
+      const list = await listModel.findByIdAndDelete(listID);
+
+      return res.status(HTTP.OK).json({
+        message: "deleted list",
+        data: list,
+      });
+    } else {
+      return res.status(HTTP.BAD_REQUEST).json({
+        message: `you are not a user`,
+      });
+    }
+  } catch (error) {
+    return res.status(HTTP.BAD_REQUEST).json({
+      message: `error creating product ${error}`,
     });
   }
 };

@@ -6,6 +6,10 @@ import {
   purchaseProduct,
   viewOrders,
   deleteProduct,
+  createProductList,
+  addProductList,
+  deleteProductList,
+  getLists,
 } from "../controller/productController";
 import multer from "multer";
 const upload = multer().single("image");
@@ -21,5 +25,9 @@ productRouter
 
 productRouter.route("/:userID/view-orders").get(viewOrders);
 productRouter.route("/:userID/:productID/delete-product").delete(deleteProduct);
+productRouter.route("/:userID/create-list").post(createProductList);
+productRouter.route("/:userID/add-list").patch(addProductList);
+productRouter.route("/:userID/:listID/delete-list").delete(deleteProductList);
+productRouter.route("/:userID/get-list").get(getLists);
 
 export default productRouter;

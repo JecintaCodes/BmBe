@@ -169,7 +169,8 @@ export const updateUserInfo = async (req: Request, res: Response) => {
 
 export const registerAdmin = async (req: Request, res: Response) => {
   try {
-    const { name, email, role, password, secretCode, status } = req.body;
+    const { name, email, role, password, secretCode, status, address } =
+      req.body;
     const secret = "AjegunleCore";
 
     if (secret === secretCode) {
@@ -178,6 +179,7 @@ export const registerAdmin = async (req: Request, res: Response) => {
       const user = await userModel.create({
         name,
         email,
+        address,
         password: harsh,
         status,
         secretCode,
@@ -202,7 +204,7 @@ export const registerAdmin = async (req: Request, res: Response) => {
 
 export const registerUser = async (req: Request, res: Response) => {
   try {
-    const { adminID } = req.params;
+    const { adminID, address } = req.params;
 
     const { name, email, password, status } = req.body;
 
@@ -214,6 +216,7 @@ export const registerUser = async (req: Request, res: Response) => {
     const user = await userModel.create({
       name,
       email,
+      address,
       password: harsh,
       status,
       role: "USER",
@@ -233,13 +236,14 @@ export const registerUser = async (req: Request, res: Response) => {
 
 export const registerBuyer = async (req: Request, res: Response) => {
   try {
-    const { name, email, password } = req.body;
+    const { name, email, password, address } = req.body;
 
     const salt = await genSalt(2);
     const harsh = await hash(password, salt);
     const buyer = await userModel.create({
       name,
       email,
+      address,
       password: harsh,
       role: "BUYER",
       verify: true,

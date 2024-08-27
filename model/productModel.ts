@@ -9,7 +9,7 @@ interface iProduct {
   QTYinStock: number;
   storeID: string;
   toggle: boolean;
-
+  accountNumber: string;
   userID: string;
   users: {};
 }
@@ -29,6 +29,9 @@ const productModel = new Schema(
       type: String,
     },
     img: {
+      type: String,
+    },
+    accountNumber: {
       type: String,
     },
     description: {
