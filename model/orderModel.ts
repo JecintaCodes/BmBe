@@ -10,6 +10,7 @@ interface iOrder {
   address: string;
   userID: string;
   users: {};
+  payments: {}[];
 }
 
 interface iOrderData extends iOrder, Document {}
@@ -50,6 +51,12 @@ const orderModel = new Schema(
       type: Types.ObjectId,
       ref: "users",
     },
+    payments: [
+      {
+        type: Types.ObjectId,
+        ref: "payments",
+      },
+    ],
   },
   { timestamps: true }
 );

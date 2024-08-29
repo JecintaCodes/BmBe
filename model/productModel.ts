@@ -12,6 +12,7 @@ interface iProduct {
   accountNumber: string;
   userID: string;
   users: {};
+  payments: {}[];
 }
 
 interface iProductData extends iProduct, Document {}
@@ -56,6 +57,12 @@ const productModel = new Schema(
       type: Types.ObjectId,
       ref: "users",
     },
+    payments: [
+      {
+        type: Types.ObjectId,
+        ref: "payments",
+      },
+    ],
   },
   { timestamps: true }
 );

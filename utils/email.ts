@@ -26,16 +26,16 @@ export const sendEmail = async () => {
   try {
     const accessToken: any = (await oAuth.getAccessToken()).token;
 
-    const transporter = nodemailer.createTransport({
-      service: "gmail",
-      auth: {
-        type: "OAuth2",
-        user: USER_MAIL,
-        ClientId: GOOGLE_CLIENT,
-        ClientSecret: GOOGLE_SECRET_KEY,
-        ClientUrl: GOOGLE_URL,
-      },
-    });
+    // const transporter = nodemailer.createTransport({
+    //   service: "gmail",
+    //   auth: {
+    //     type: "OAuth2",
+    //     user: USER_MAIL,
+    //     ClientId: GOOGLE_CLIENT,
+    //     ClientSecret: GOOGLE_SECRET_KEY,
+    //     ClientUrl: GOOGLE_URL,
+    //   },
+    // });
   } catch (error) {
     console.log(error);
   }

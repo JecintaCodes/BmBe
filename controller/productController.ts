@@ -164,6 +164,35 @@ export const purchaseProduct = async (req: Request, res: Response) => {
   }
 };
 
+export const viewUserProduct = async (req: Request, res: Response) => {
+  try {
+    const { userID } = req.params;
+
+    const user = await userModel.findById(userID).populate({
+      path: "myStore",
+      options: {
+        sort: {
+          createdAt: -1,
+        },
+      },
+    });
+
+    if (user) {
+      return res.status(HTTP.CREATED).json({
+        message: "product updated",
+        data: user,
+      });
+    } else {
+      return res.status(HTTP.BAD_REQUEST).json({
+        message: `this is not a product `,
+      });
+    }
+  } catch (error) {
+    return res.status(HTTP.BAD_REQUEST).json({
+      message: `can't update product ${error}`,
+    });
+  }
+};
 export const viewOrders = async (req: Request, res: Response) => {
   try {
     const { userID } = req.params;

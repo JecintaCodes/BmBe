@@ -3,6 +3,12 @@ import userModel from "../model/userMode";
 import { HTTP } from "../error/mainError";
 import { genSalt, hash, compare } from "bcryptjs";
 import { streamUpload } from "../utils/stream";
+import { role } from "../utils/role";
+// import { createClient } from "redis";
+
+// const client = createClient()
+//   .on("error", (err) => console.error(err))
+//   .connect();
 
 export const signInUser = async (req: Request, res: Response) => {
   try {
@@ -169,8 +175,17 @@ export const updateUserInfo = async (req: Request, res: Response) => {
 
 export const registerAdmin = async (req: Request, res: Response) => {
   try {
-    const { name, email, role, password, secretCode, status, address } =
+    const { name, email, telNumb, password, secretCode, status, address } =
       req.body;
+    // const catchData = await (await client)
+    //   .get(`${name}`)
+    //   .then(async (res: any) => {
+    //     return JSON.parse(res);
+    //   });
+    // const catchResult = await catchData;
+    // if (catchResult) {
+    //   user = catchResult;
+    // } else {
     const secret = "AjegunleCore";
 
     if (secret === secretCode) {
@@ -180,12 +195,17 @@ export const registerAdmin = async (req: Request, res: Response) => {
         name,
         email,
         address,
+        telNumb,
         password: harsh,
         status,
         secretCode,
         role: "ADMIN",
         verify: true,
       });
+      // (await client).set(`${name}`, JSON.stringify(user), {
+      //   EX: 3600,
+      //   NX: true,
+      // });
       return res.status(HTTP.CREATED).json({
         message: "user created",
         data: user,
@@ -195,6 +215,7 @@ export const registerAdmin = async (req: Request, res: Response) => {
         message: `your secretcode is wronge`,
       });
     }
+    // }
   } catch (error) {
     return res.status(HTTP.OK).json({
       message: `error creating user ${error}`,
@@ -204,31 +225,37 @@ export const registerAdmin = async (req: Request, res: Response) => {
 
 export const registerUser = async (req: Request, res: Response) => {
   try {
-    const { adminID, address } = req.params;
+    const { adminID } = req.params;
 
-    const { name, email, password, status } = req.body;
+    const { name, email, password, status, address, telNumb } = req.body;
 
     const admin = await userModel.findById(adminID);
 
-    const salt = await genSalt(2);
-    const harsh = await hash(password, salt);
+    if (admin?.role === role?.admin) {
+      const salt = await genSalt(2);
+      const harsh = await hash(password, salt);
 
-    const user = await userModel.create({
-      name,
-      email,
-      address,
-      password: harsh,
-      status,
-      role: "USER",
-      verify: true,
-    });
-
-    return res.status(HTTP.CREATED).json({
-      message: "user created",
-      data: user,
-    });
+      const user = await userModel.create({
+        name,
+        email,
+        telNumb,
+        address,
+        password: harsh,
+        status,
+        role: "USER",
+        verify: true,
+      });
+      return res.status(HTTP.CREATED).json({
+        message: "user created",
+        data: user,
+      });
+    } else {
+      return res.status(HTTP.BAD_REQUEST).json({
+        message: `you are not an admin`,
+      });
+    }
   } catch (error) {
-    return res.status(HTTP.OK).json({
+    return res.status(HTTP.BAD_REQUEST).json({
       message: `error creating user ${error}`,
     });
   }
@@ -236,7 +263,7 @@ export const registerUser = async (req: Request, res: Response) => {
 
 export const registerBuyer = async (req: Request, res: Response) => {
   try {
-    const { name, email, password, address } = req.body;
+    const { name, email, password, address, telNumb } = req.body;
 
     const salt = await genSalt(2);
     const harsh = await hash(password, salt);
@@ -244,6 +271,7 @@ export const registerBuyer = async (req: Request, res: Response) => {
       name,
       email,
       address,
+      telNumb,
       password: harsh,
       role: "BUYER",
       verify: true,

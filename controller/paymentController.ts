@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import { HTTP } from "../error/mainError";
 import axios from "axios";
 import env from "dotenv";
+import paymentModel from "../model/paymentModel";
 env.config();
 
 export const makePayment = async (req: Request, res: Response) => {
@@ -42,6 +43,10 @@ export const makePayment = async (req: Request, res: Response) => {
 export const verifyPayment = async (req: Request, res: Response) => {
   try {
     const { refNumb } = req.body;
+    //checking duplicate refNumb
+    // const checkRefNumb = paymentModel.findOne({ reference: refNumb });
+    // if (checkRefNumb === refNumb) {
+    // }
     const config = {
       headers: {
         Authorization: `Bearer ${process.env.PAYSTACKKEY}`,
@@ -50,12 +55,15 @@ export const verifyPayment = async (req: Request, res: Response) => {
     };
 
     const url: string = `https://api.paystack.co/transaction/verify/${refNumb}`;
+    //api.paystack.co/transaction/verify/:reference
 
     const result = await axios.get(url, config).then((res) => {
       return res.data.data;
+      console.log(res.data.data.gateway_response);
+      console.log(res.data.data.status);
     });
     return res.status(HTTP.CREATED).json({
-      message: "u have maked your payment",
+      message: "ur payment is successful",
       data: result,
     });
   } catch (error) {

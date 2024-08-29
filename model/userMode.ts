@@ -9,12 +9,14 @@ interface iUser {
   secretCode: string;
   address: string;
   description?: string;
+  telNumb?: string;
   products: {}[];
   myStore: {}[];
   order: {}[];
   verify: boolean;
   verifyToken: string;
   lists: {}[];
+  payments: {}[];
 }
 
 interface iUserData extends iUser, Document {}
@@ -26,6 +28,10 @@ const userModel = new Schema<iUserData>(
       require: true,
     },
     name: {
+      type: String,
+      require: true,
+    },
+    telNumb: {
       type: String,
       require: true,
     },
@@ -86,6 +92,12 @@ const userModel = new Schema<iUserData>(
       {
         type: Types.ObjectId,
         ref: "orders",
+      },
+    ],
+    payments: [
+      {
+        type: Types.ObjectId,
+        ref: "payments",
       },
     ],
   },
