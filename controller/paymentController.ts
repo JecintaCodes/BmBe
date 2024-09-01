@@ -3,6 +3,10 @@ import { HTTP } from "../error/mainError";
 import axios from "axios";
 import env from "dotenv";
 import paymentModel from "../model/paymentModel";
+import userMode from "../model/userMode";
+import productModel from "../model/productModel";
+import orderModel from "../model/orderModel";
+import { Types } from "mongoose";
 env.config();
 
 export const makePayment = async (req: Request, res: Response) => {
@@ -42,11 +46,8 @@ export const makePayment = async (req: Request, res: Response) => {
 
 export const verifyPayment = async (req: Request, res: Response) => {
   try {
-    const { refNumb } = req.body;
-    //checking duplicate refNumb
-    // const checkRefNumb = paymentModel.findOne({ reference: refNumb });
-    // if (checkRefNumb === refNumb) {
-    // }
+    const { refNumb, amount, email, userID } = req.body;
+
     const config = {
       headers: {
         Authorization: `Bearer ${process.env.PAYSTACKKEY}`,
@@ -55,13 +56,50 @@ export const verifyPayment = async (req: Request, res: Response) => {
     };
 
     const url: string = `https://api.paystack.co/transaction/verify/${refNumb}`;
-    //api.paystack.co/transaction/verify/:reference
+
+    const user = await userMode.findOne({ email });
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    //check for duplcate
+    const checkDuplicate = await paymentModel.findOne({ refNumb });
+
+    if (checkDuplicate) {
+      return res.status(404).json({
+        message: "Duplicate reference id",
+      });
+    }
 
     const result = await axios.get(url, config).then((res) => {
       return res.data.data;
-      console.log(res.data.data.gateway_response);
-      console.log(res.data.data.status);
     });
+    // Save payment data to database
+    const paymentData = new paymentModel({
+      refNumb,
+      email,
+      address: user?.address,
+      phoneNumb: user?.telNumb,
+      amount,
+      status: "Successful",
+      user: user._id,
+    });
+    paymentData?.users?.push(new Types.ObjectId(userID?._id));
+    await paymentData.save();
+    // user?.payments.push(new Types.ObjectId(paymentData?._id))
+    // console.log(paymentData);
+
+    const order = new orderModel({
+      //  title: product.title,
+      productOwner: user?._id,
+      amount: paymentData.amount,
+      address: user?.address,
+      amountPaid: paymentData?.amount,
+    });
+    // order.users.push(new Types.ObjectId(user?._id))
+    // user?.order?.push(new Types.ObjectId(order))
+    await order.save();
+
     return res.status(HTTP.CREATED).json({
       message: "ur payment is successful",
       data: result,
