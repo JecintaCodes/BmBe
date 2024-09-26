@@ -2,10 +2,10 @@ import { Document, model, Schema, Types } from "mongoose";
 
 interface iOrder {
   title: string;
-  productOwner: string;
+  productOwner?: string;
   img: string;
   description?: string;
-  amountPaid: number;
+  amountPaid?: number;
   QTYOrder: number;
   address: string;
   userID: string;

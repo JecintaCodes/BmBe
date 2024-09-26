@@ -3,7 +3,8 @@ import { model, Types, Document, Schema } from "mongoose";
 interface iPayment {
   refNumb: string;
   email: string;
-  amount: string;
+  amount: number;
+  status: string;
   userID: string;
   phoneNumb: string;
   address: string;
@@ -22,6 +23,9 @@ const paymentModel = new Schema<iPaymentData>(
     email: {
       type: String,
     },
+    status: {
+      type: String,
+    },
     userID: {
       type: String,
     },
@@ -32,7 +36,7 @@ const paymentModel = new Schema<iPaymentData>(
       type: String,
     },
     amount: {
-      type: String,
+      type: Number,
     },
     users: [
       {

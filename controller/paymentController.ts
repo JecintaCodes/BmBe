@@ -6,7 +6,7 @@ import paymentModel from "../model/paymentModel";
 import userMode from "../model/userMode";
 import productModel from "../model/productModel";
 import orderModel from "../model/orderModel";
-import { Types } from "mongoose";
+import { Types, startSession } from "mongoose";
 env.config();
 
 export const makePayment = async (req: Request, res: Response) => {
@@ -74,14 +74,17 @@ export const verifyPayment = async (req: Request, res: Response) => {
     const result = await axios.get(url, config).then((res) => {
       return res.data.data;
     });
+    console.log(result);
     // Save payment data to database
+    const session = await startSession();
+
     const paymentData = new paymentModel({
       refNumb,
       email,
       address: user?.address,
       phoneNumb: user?.telNumb,
-      amount,
-      status: "Successful",
+      amount: result?.amount / 100,
+      status: result?.status,
       user: user._id,
     });
     paymentData?.users?.push(new Types.ObjectId(userID?._id));
@@ -104,9 +107,76 @@ export const verifyPayment = async (req: Request, res: Response) => {
       message: "ur payment is successful",
       data: result,
     });
-  } catch (error) {
+  } catch (error: any) {
     return res.status(HTTP.BAD_REQUEST).json({
-      message: `error making payment ${error}`,
+      message: `error making payment ${error?.message}`,
+    });
+  }
+};
+
+export const splitPayment = async (req: Request, res: Response) => {
+  try {
+    // const
+    const config = {
+      headers: {
+        Authorization: `Bearer ${process.env.PAYSTACKKEY}`,
+        "Content-Type": "application/json",
+      },
+    };
+    const { amount, email } = req.body;
+    const paystackAmount = amount * 0.01;
+    const platformAmount = amount * 0.1;
+    const customerAmount = amount - paystackAmount - platformAmount;
+
+    // Split payment between accounts
+    const paystackData = {
+      email,
+      amount: paystackAmount,
+      subaccount: "3187286773",
+      transaction_charge: paystackAmount,
+    };
+
+    const platformData = {
+      email,
+      amount: platformAmount,
+      subaccount: "9126124352",
+      bearer: "subaccount",
+    };
+
+    const customerData = {
+      email,
+      amount: customerAmount,
+      subaccount: "customer_account_id",
+      bearer: "subaccount",
+    };
+
+    const paystackResult = await axios.post(
+      "https://api.paystack.co/transaction/initialize",
+      paystackData,
+      config
+    );
+    const platformResult = await axios.post(
+      "https://api.paystack.co/transaction/initialize",
+      platformData,
+      config
+    );
+    const customerResult = await axios.post(
+      "https://api.paystack.co/transaction/initialize",
+      customerData,
+      config
+    );
+
+    return res.status(HTTP.OK).json({
+      message: "payment successfully split",
+      data: {
+        paystack: paystackResult.data.data,
+        platform: platformResult.data.data,
+        customer: customerResult.data.data,
+      },
+    });
+  } catch (error: any) {
+    return res.status(HTTP.BAD_REQUEST).json({
+      message: `error splitting payment ${error?.message}`,
     });
   }
 };

@@ -2,14 +2,14 @@ import { Document, model, Schema, Types } from "mongoose";
 
 interface iProduct {
   title: string;
-  postBy: string;
+  postBy?: string;
   img: string;
   description?: string;
   amount: number;
   QTYinStock: number;
-  storeID: string;
-  toggle: boolean;
-  accountNumber: string;
+  storeID?: string;
+  toggle?: boolean;
+  // accountNumber: string;
   userID: string;
   users: {};
   payments: {}[];
@@ -32,9 +32,9 @@ const productModel = new Schema(
     img: {
       type: String,
     },
-    accountNumber: {
-      type: String,
-    },
+    // accountNumber: {
+    //   type: String,
+    // },
     description: {
       type: String,
     },

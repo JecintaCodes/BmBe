@@ -265,62 +265,82 @@ export const deleteProduct = async (req: Request, res: Response) => {
 export const createProductList = async (req: Request, res: Response) => {
   try {
     const { userID } = req.params;
-    const { title, amount } = req.body;
+    const { lists }: { lists: any[] } = req.body;
+
+    console.log("Request body:", req.body);
+    console.log("User ID:", userID);
+
+    if (!lists || !Array.isArray(lists)) {
+      return res.status(HTTP.BAD_REQUEST).json({
+        message: "Invalid request: lists array required",
+      });
+    }
 
     const user = await userModel.findById(userID);
-
     if (user) {
-      const list = await listModel.create({
-        title,
-        amount,
-        userID: user?._id,
-      });
-      user?.lists?.push(list);
-      user?.save();
+      const createdLists = await Promise.all(
+        lists.map(async (list) => {
+          const newList = await listModel.create({
+            title: list.title,
+            amount: list.amount,
+            userID: user._id,
+          });
+          return newList;
+        })
+      );
 
-      return res.status(HTTP.CREATED).json({
-        message: "list created",
-        data: list,
+      console.log("Created lists:", createdLists);
+
+      await user.updateOne({
+        $push: { lists: { $each: createdLists.map((list) => list._id) } },
       });
+
+      return res.status(HTTP.CREATED).json(createdLists);
+      // const { userID } = req.params;
+      // const { title, amount } = req.body;
+
+      // const user = await userModel.findById(userID);
+      // if (user) {
+      //   const list = await listModel.create({
+      //     title,
+      //     amount,
+      //     userID: user?._id,
+      //   });
+      //   console.log(list);
+      //   // user?.lists?.push(list);
+      //   // user?.save();
+      //   // // list?.lists.push(list);
+      //   // // list?.save();
+      //   await user?.updateOne({ $push: { lists: list._id } });
+
+      //   return res.status(HTTP.CREATED).json({
+      //     message: "list created",
+      //     data: list,
+      //   });
     } else {
       return res.status(HTTP.BAD_REQUEST).json({
         message: `you are not a user`,
       });
     }
   } catch (error) {
+    console.error(error);
     return res.status(HTTP.BAD_REQUEST).json({
-      message: `error creating product ${error}`,
+      message: "Internal Server Error",
     });
   }
 };
-export const addProductList = async (req: Request, res: Response) => {
+export const viewLists = async (req: Request, res: Response) => {
   try {
-    const { userID } = req.params;
-    const { title, amount } = req.body;
+    const { title } = req.body;
+    const list = await listModel.find({ title });
 
-    const user = await userModel.findById(userID);
-
-    if (user) {
-      const list = await listModel.findByIdAndUpdate(
-        {
-          title,
-          amount,
-        }
-        // { new: true }
-      );
-
-      return res.status(HTTP.CREATED).json({
-        message: "added list",
-        data: list,
-      });
-    } else {
-      return res.status(HTTP.BAD_REQUEST).json({
-        message: `you are not a user`,
-      });
-    }
+    return res.status(HTTP.OK).json({
+      message: "all user gotten list",
+      data: list,
+    });
   } catch (error) {
     return res.status(HTTP.BAD_REQUEST).json({
-      message: `error adding product ${error}`,
+      message: `error creating product ${error}`,
     });
   }
 };
@@ -348,22 +368,14 @@ export const getLists = async (req: Request, res: Response) => {
 };
 export const deleteProductList = async (req: Request, res: Response) => {
   try {
-    const { userID, listID } = req.params;
+    const { listID } = req.params;
 
-    const user = await userModel.findById(userID);
+    const list = await listModel.findByIdAndDelete(listID);
 
-    if (user) {
-      const list = await listModel.findByIdAndDelete(listID);
-
-      return res.status(HTTP.OK).json({
-        message: "deleted list",
-        data: list,
-      });
-    } else {
-      return res.status(HTTP.BAD_REQUEST).json({
-        message: `you are not a user`,
-      });
-    }
+    return res.status(HTTP.OK).json({
+      message: "deleted list",
+      data: list,
+    });
   } catch (error) {
     return res.status(HTTP.BAD_REQUEST).json({
       message: `error creating product ${error}`,

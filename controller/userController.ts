@@ -227,7 +227,8 @@ export const registerUser = async (req: Request, res: Response) => {
   try {
     const { adminID } = req.params;
 
-    const { name, email, password, status, address, telNumb } = req.body;
+    const { name, email, password, status, address, telNumb, accountNumb } =
+      req.body;
 
     const admin = await userModel.findById(adminID);
 
@@ -240,6 +241,7 @@ export const registerUser = async (req: Request, res: Response) => {
         email,
         telNumb,
         address,
+        accountNumb,
         password: harsh,
         status,
         role: "USER",

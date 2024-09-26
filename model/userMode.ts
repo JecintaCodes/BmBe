@@ -8,6 +8,7 @@ interface iUser {
   password: string;
   secretCode: string;
   address: string;
+  accountNumb: string;
   description?: string;
   telNumb?: string;
   products: {}[];
@@ -49,6 +50,9 @@ const userModel = new Schema<iUserData>(
     },
 
     role: {
+      type: String,
+    },
+    accountNumb: {
       type: String,
     },
     verifyToken: {

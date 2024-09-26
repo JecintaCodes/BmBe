@@ -3,8 +3,7 @@ import { Schema, Document, model, Types } from "mongoose";
 interface iList {
   title: string;
   amount: number;
-  userID: string;
-  //   users: {}[];
+  userID: {};
 }
 
 interface iListData extends iList, Document {}
@@ -18,16 +17,10 @@ const listModel = new Schema<iListData>(
       type: Number,
     },
     userID: {
-      type: String,
+      type: Types.ObjectId,
+      ref: "users", // Assuming your user model is named "users"
     },
   },
-  //   users: [
-  //       {
-  //         type: Types.ObjectId,
-  //         ref: "users",
-  //       },
-  //     ],
-  //   },
   { timestamps: true }
 );
 
