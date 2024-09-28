@@ -289,34 +289,13 @@ export const createProductList = async (req: Request, res: Response) => {
         })
       );
 
-      console.log("Created lists:", createdLists);
+      // console.log("Created lists:", createdLists);
 
       await user.updateOne({
         $push: { lists: { $each: createdLists.map((list) => list._id) } },
       });
 
       return res.status(HTTP.CREATED).json(createdLists);
-      // const { userID } = req.params;
-      // const { title, amount } = req.body;
-
-      // const user = await userModel.findById(userID);
-      // if (user) {
-      //   const list = await listModel.create({
-      //     title,
-      //     amount,
-      //     userID: user?._id,
-      //   });
-      //   console.log(list);
-      //   // user?.lists?.push(list);
-      //   // user?.save();
-      //   // // list?.lists.push(list);
-      //   // // list?.save();
-      //   await user?.updateOne({ $push: { lists: list._id } });
-
-      //   return res.status(HTTP.CREATED).json({
-      //     message: "list created",
-      //     data: list,
-      //   });
     } else {
       return res.status(HTTP.BAD_REQUEST).json({
         message: `you are not a user`,
