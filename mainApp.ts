@@ -14,7 +14,16 @@ export const mainApp = (app: Application) => {
     res.header("Access-Control-Allow-Headers", "Content-Type");
     next();
   });
-  app.use(cors({ origin: ["*"] }));
+  // app.use(cors({ origin: ["*"] }));
+  cors({
+    origin: [
+      "*",
+      "http://localhost:5173",
+      "http://localhost:5174",
+      "http://localhost:4000",
+      "https://boundary-market.web.app/",
+    ],
+  });
   app.use(express.json());
 
   app.use(morgan("dev"));

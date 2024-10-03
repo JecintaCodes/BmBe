@@ -13,7 +13,6 @@ import {
 } from "../controller/productController";
 import multer from "multer";
 const upload = multer().single("image");
-
 const productRouter = Router();
 
 productRouter.route("/:userID/register-products").post(upload, createProduct);
@@ -22,7 +21,6 @@ productRouter.route("/:productID/get-one-product").get(readOneProduct);
 productRouter
   .route("/:userID/:productID/purchase-product")
   .post(purchaseProduct);
-
 productRouter.route("/:userID/view-user-products").get(viewUserProduct);
 productRouter.route("/:userID/view-orders").get(viewOrders);
 productRouter.route("/:userID/:productID/delete-product").delete(deleteProduct);
