@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.deleteProductList = exports.getLists = exports.addProductList = exports.createProductList = exports.deleteProduct = exports.viewOrders = exports.viewUserProduct = exports.purchaseProduct = exports.updateProducts = exports.readOneProduct = exports.readProduct = exports.createProduct = void 0;
+exports.deleteProductList = exports.getLists = exports.viewLists = exports.createProductList = exports.deleteProduct = exports.viewOrders = exports.viewUserProduct = exports.purchaseProduct = exports.updateProducts = exports.readOneProduct = exports.readProduct = exports.createProduct = void 0;
 const userMode_1 = __importDefault(require("../model/userMode"));
 const productModel_1 = __importDefault(require("../model/productModel"));
 const stream_1 = require("../utils/stream");
@@ -261,29 +261,54 @@ const deleteProduct = (req, res) => __awaiter(void 0, void 0, void 0, function* 
 });
 exports.deleteProduct = deleteProduct;
 const createProductList = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a;
     try {
         const { userID } = req.params;
-        const { title, amount } = req.body;
+        const { lists } = req.body;
+        console.log("Request body:", req.body);
+        console.log("User ID:", userID);
+        if (!lists || !Array.isArray(lists)) {
+            return res.status(mainError_1.HTTP.BAD_REQUEST).json({
+                message: "Invalid request: lists array required",
+            });
+        }
         const user = yield userMode_1.default.findById(userID);
         if (user) {
-            const list = yield listModel_1.default.create({
-                title,
-                amount,
-                userID: user === null || user === void 0 ? void 0 : user._id,
+            const createdLists = yield Promise.all(lists.map((list) => __awaiter(void 0, void 0, void 0, function* () {
+                const newList = yield listModel_1.default.create({
+                    title: list.title,
+                    amount: list.amount,
+                    userID: user._id,
+                });
+                return newList;
+            })));
+            // console.log("Created lists:", createdLists);
+            yield user.updateOne({
+                $push: { lists: { $each: createdLists.map((list) => list._id) } },
             });
-            (_a = user === null || user === void 0 ? void 0 : user.lists) === null || _a === void 0 ? void 0 : _a.push(list);
-            user === null || user === void 0 ? void 0 : user.save();
-            return res.status(mainError_1.HTTP.CREATED).json({
-                message: "list created",
-                data: list,
-            });
+            return res.status(mainError_1.HTTP.CREATED).json(createdLists);
         }
         else {
             return res.status(mainError_1.HTTP.BAD_REQUEST).json({
                 message: `you are not a user`,
             });
         }
+    }
+    catch (error) {
+        console.error(error);
+        return res.status(mainError_1.HTTP.BAD_REQUEST).json({
+            message: "Internal Server Error",
+        });
+    }
+});
+exports.createProductList = createProductList;
+const viewLists = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { title } = req.body;
+        const list = yield listModel_1.default.find({ title });
+        return res.status(mainError_1.HTTP.OK).json({
+            message: "all user gotten list",
+            data: list,
+        });
     }
     catch (error) {
         return res.status(mainError_1.HTTP.BAD_REQUEST).json({
@@ -291,37 +316,7 @@ const createProductList = (req, res) => __awaiter(void 0, void 0, void 0, functi
         });
     }
 });
-exports.createProductList = createProductList;
-const addProductList = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    try {
-        const { userID } = req.params;
-        const { title, amount } = req.body;
-        const user = yield userMode_1.default.findById(userID);
-        if (user) {
-            const list = yield listModel_1.default.findByIdAndUpdate({
-                title,
-                amount,
-            }
-            // { new: true }
-            );
-            return res.status(mainError_1.HTTP.CREATED).json({
-                message: "added list",
-                data: list,
-            });
-        }
-        else {
-            return res.status(mainError_1.HTTP.BAD_REQUEST).json({
-                message: `you are not a user`,
-            });
-        }
-    }
-    catch (error) {
-        return res.status(mainError_1.HTTP.BAD_REQUEST).json({
-            message: `error adding product ${error}`,
-        });
-    }
-});
-exports.addProductList = addProductList;
+exports.viewLists = viewLists;
 const getLists = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { userID } = req.params;
@@ -347,20 +342,12 @@ const getLists = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
 exports.getLists = getLists;
 const deleteProductList = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const { userID, listID } = req.params;
-        const user = yield userMode_1.default.findById(userID);
-        if (user) {
-            const list = yield listModel_1.default.findByIdAndDelete(listID);
-            return res.status(mainError_1.HTTP.OK).json({
-                message: "deleted list",
-                data: list,
-            });
-        }
-        else {
-            return res.status(mainError_1.HTTP.BAD_REQUEST).json({
-                message: `you are not a user`,
-            });
-        }
+        const { listID } = req.params;
+        const list = yield listModel_1.default.findByIdAndDelete(listID);
+        return res.status(mainError_1.HTTP.OK).json({
+            message: "deleted list",
+            data: list,
+        });
     }
     catch (error) {
         return res.status(mainError_1.HTTP.BAD_REQUEST).json({

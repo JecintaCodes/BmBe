@@ -27,6 +27,9 @@ const userModel = new mongoose_1.Schema({
     role: {
         type: String,
     },
+    accountNumb: {
+        type: String,
+    },
     verifyToken: {
         type: String,
     },

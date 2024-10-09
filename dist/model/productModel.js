@@ -15,9 +15,9 @@ const productModel = new mongoose_1.Schema({
     img: {
         type: String,
     },
-    accountNumber: {
-        type: String,
-    },
+    // accountNumber: {
+    //   type: String,
+    // },
     description: {
         type: String,
     },

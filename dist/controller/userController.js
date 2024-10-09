@@ -219,7 +219,7 @@ exports.registerAdmin = registerAdmin;
 const registerUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { adminID } = req.params;
-        const { name, email, password, status, address, telNumb } = req.body;
+        const { name, email, password, status, address, telNumb, accountNumb } = req.body;
         const admin = yield userMode_1.default.findById(adminID);
         if ((admin === null || admin === void 0 ? void 0 : admin.role) === (role_1.role === null || role_1.role === void 0 ? void 0 : role_1.role.admin)) {
             const salt = yield (0, bcryptjs_1.genSalt)(2);
@@ -229,6 +229,7 @@ const registerUser = (req, res) => __awaiter(void 0, void 0, void 0, function* (
                 email,
                 telNumb,
                 address,
+                accountNumb,
                 password: harsh,
                 status,
                 role: "USER",

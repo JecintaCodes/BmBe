@@ -18,7 +18,6 @@ productRouter.route("/:userID/view-user-products").get(productController_1.viewU
 productRouter.route("/:userID/view-orders").get(productController_1.viewOrders);
 productRouter.route("/:userID/:productID/delete-product").delete(productController_1.deleteProduct);
 productRouter.route("/:userID/create-list").post(productController_1.createProductList);
-productRouter.route("/:userID/add-list").patch(productController_1.addProductList);
-productRouter.route("/:userID/:listID/delete-list").delete(productController_1.deleteProductList);
+productRouter.route("/:listID/delete-list").delete(productController_1.deleteProductList);
 productRouter.route("/:userID/get-list").get(productController_1.getLists);
 exports.default = productRouter;

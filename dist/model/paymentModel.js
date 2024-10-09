@@ -5,6 +5,24 @@ const paymentModel = new mongoose_1.Schema({
     refNumb: {
         type: String,
     },
+    email: {
+        type: String,
+    },
+    status: {
+        type: String,
+    },
+    userID: {
+        type: String,
+    },
+    phoneNumb: {
+        type: String,
+    },
+    address: {
+        type: String,
+    },
+    amount: {
+        type: Number,
+    },
     users: [
         {
             type: mongoose_1.Types.ObjectId,

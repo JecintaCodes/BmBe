@@ -9,15 +9,8 @@ const listModel = new mongoose_1.Schema({
         type: Number,
     },
     userID: {
-        type: String,
+        type: mongoose_1.Types.ObjectId,
+        ref: "users", // Assuming your user model is named "users"
     },
-}, 
-//   users: [
-//       {
-//         type: Types.ObjectId,
-//         ref: "users",
-//       },
-//     ],
-//   },
-{ timestamps: true });
+}, { timestamps: true });
 exports.default = (0, mongoose_1.model)("lists", listModel);

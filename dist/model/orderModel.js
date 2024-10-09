@@ -12,6 +12,9 @@ const orderModel = new mongoose_1.Schema({
     orderOwner: {
         type: String,
     },
+    phoneNumb: {
+        type: String,
+    },
     img: {
         type: String,
     },

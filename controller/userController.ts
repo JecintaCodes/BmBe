@@ -18,6 +18,7 @@ export const signInUser = async (req: Request, res: Response) => {
     if (user?.verify) {
       const comp = await compare(password, user?.password);
 
+      console.log(user);
       if (comp) {
         return res.status(HTTP.CREATED).json({
           message: `welcome ${user.name}`,
