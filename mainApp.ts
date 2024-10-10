@@ -15,8 +15,8 @@ import paymentRouter from "./router/paymentRouter";
 export const mainApp = (app: Application) => {
   app.use((req: Request, res: Response, next: NextFunction) => {
     res.header(
-      "Access-Control-Allow-Origin"
-      // "https://boundary-market-aae38.web.app/"
+      "Access-Control-Allow-Origin",
+      "https://boundary-market1.web.app"
     );
     res.header("Access-Control-Allow-Credentials", "true");
     res.header("Access-Control-Allow-Methods", "GET, PUT, PATCH, POST, DELETE");
@@ -29,7 +29,7 @@ export const mainApp = (app: Application) => {
       "*",
       "http://localhost:5173/",
       "http://localhost:4000/",
-      // "https://boundary-market-aae38.web.app/",
+      "https://boundary-market1.web.app",
     ],
   });
   app.use(express.json());
