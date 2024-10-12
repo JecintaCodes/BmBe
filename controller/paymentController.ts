@@ -24,11 +24,11 @@ export const makePayment = async (req: Request, res: Response) => {
     const params = JSON.stringify({
       email,
       amount: `${parseInt(amount) * 100}`,
-      // callback_url: `https://boundary-market1.web.app/verify-payment`,
-      callback_url: `http://localhost:5173/verify-payment`,
+      callback_url: `https://boundary-market1.web.app/verify-payment`,
+      // callback_url: `http://localhost:5173/verify-payment`,
       metadata: {
-        // cancel_action: "https://boundary-market1.web.app/product",
-        cancel_action: "http://localhost:5173/product",
+        cancel_action: "https://boundary-market1.web.app/product",
+        // cancel_action: "http://localhost:5173/product",
       },
     });
 
