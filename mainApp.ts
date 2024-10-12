@@ -24,14 +24,36 @@ export const mainApp = (app: Application) => {
     next();
   });
   // app.use(cors({ origin: ["*"] }));
-  cors({
-    origin: [
-      "*",
-      "http://localhost:5173/",
-      "http://localhost:4000/",
-      "https://boundary-market1.web.app",
-    ],
-  });
+  // cors({
+  //   origin: [
+  //     "*",
+  //     "http://localhost:5173/",
+  //     "http://localhost:4000/",
+  //     "https://boundary-market1.web.app",
+  //   ],
+  // });
+  // app.use(
+  //   cors({
+  //     origin: [
+  //       "*",
+  //       "http://localhost:5173/",
+  //       "http://localhost:4000/",
+  //       "https://boundary-market1.web.app",
+  //     ],
+  //     methods: ["GET", "POST", "PATCH", "DELETE"],
+  //     // allowedHeaders: ["Content-Type", "Authorization"],
+  //     // exposedHeaders: ["Authorization"],
+  //     // credentials: true,
+  //   })
+  // );
+  app.use(
+    cors({
+      origin: ["http://localhost:5173"], // Allow specific origin
+      methods: ["GET", "POST", "PUT", "DELETE"],
+      allowedHeaders: ["Content-Type", "Authorization"],
+      credentials: true,
+    })
+  );
   app.use(express.json());
 
   app.use(morgan("dev"));

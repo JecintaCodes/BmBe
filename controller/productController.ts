@@ -261,7 +261,59 @@ export const deleteProduct = async (req: Request, res: Response) => {
     });
   }
 };
+export const viewLists = async (req: Request, res: Response) => {
+  try {
+    const { title } = req.body;
+    const list = await listModel.find({ title });
 
+    return res.status(HTTP.OK).json({
+      message: "all user gotten list",
+      data: list,
+    });
+  } catch (error) {
+    return res.status(HTTP.BAD_REQUEST).json({
+      message: `error creating product ${error}`,
+    });
+  }
+};
+// export const getLists = async (req: Request, res: Response) => {
+//   try {
+//     const { userID } = req.params;
+//     const list = await userModel.findById(userID).populate({
+//       path: "lists",
+//       options: {
+//         sort: {
+//           createdAt: -1,
+//         },
+//       },
+//     });
+
+//     return res.status(HTTP.OK).json({
+//       message: "all user gotten list",
+//       data: list,
+//     });
+//   } catch (error) {
+//     return res.status(HTTP.BAD_REQUEST).json({
+//       message: `error creating product ${error}`,
+//     });
+//   }
+// };
+export const deleteProductList = async (req: Request, res: Response) => {
+  try {
+    const { listID } = req.params;
+
+    const list = await listModel.findByIdAndDelete(listID);
+
+    return res.status(HTTP.OK).json({
+      message: "deleted list",
+      data: list,
+    });
+  } catch (error) {
+    return res.status(HTTP.BAD_REQUEST).json({
+      message: `error creating product ${error}`,
+    });
+  }
+};
 export const createProductList = async (req: Request, res: Response) => {
   try {
     const { userID } = req.params;
@@ -305,59 +357,6 @@ export const createProductList = async (req: Request, res: Response) => {
     console.error(error);
     return res.status(HTTP.BAD_REQUEST).json({
       message: "Internal Server Error",
-    });
-  }
-};
-export const viewLists = async (req: Request, res: Response) => {
-  try {
-    const { title } = req.body;
-    const list = await listModel.find({ title });
-
-    return res.status(HTTP.OK).json({
-      message: "all user gotten list",
-      data: list,
-    });
-  } catch (error) {
-    return res.status(HTTP.BAD_REQUEST).json({
-      message: `error creating product ${error}`,
-    });
-  }
-};
-export const getLists = async (req: Request, res: Response) => {
-  try {
-    const { userID } = req.params;
-    const list = await userModel.findById(userID).populate({
-      path: "lists",
-      options: {
-        sort: {
-          createdAt: -1,
-        },
-      },
-    });
-
-    return res.status(HTTP.OK).json({
-      message: "all user gotten list",
-      data: list,
-    });
-  } catch (error) {
-    return res.status(HTTP.BAD_REQUEST).json({
-      message: `error creating product ${error}`,
-    });
-  }
-};
-export const deleteProductList = async (req: Request, res: Response) => {
-  try {
-    const { listID } = req.params;
-
-    const list = await listModel.findByIdAndDelete(listID);
-
-    return res.status(HTTP.OK).json({
-      message: "deleted list",
-      data: list,
-    });
-  } catch (error) {
-    return res.status(HTTP.BAD_REQUEST).json({
-      message: `error creating product ${error}`,
     });
   }
 };
