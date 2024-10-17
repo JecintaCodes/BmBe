@@ -15,7 +15,6 @@ env.config();
 // const client = createClient()
 //   .on("error", (err) => console.error(err))
 //   .connect();
-
 export const signInUser = async (req: Request, res: Response) => {
   try {
     const { email, password } = req.body;
@@ -24,12 +23,29 @@ export const signInUser = async (req: Request, res: Response) => {
     if (user?.verify) {
       const comp = await compare(password, user?.password);
 
-      console.log(user);
       if (comp) {
-        return res.status(HTTP.CREATED).json({
-          message: `welcome ${user.name}`,
-          data: user,
-        });
+        // Redirect to respective screens
+        switch (user.role) {
+          case "admin":
+            return res.status(HTTP.CREATED).json({
+              message: `Welcome Admin ${user.name}`,
+              data: user,
+            });
+          case "buyer":
+            return res.status(HTTP.CREATED).json({
+              message: `Welcome Buyer ${user.name}`,
+              data: user,
+            });
+          case "user":
+            return res.status(HTTP.CREATED).json({
+              message: `Welcome User ${user.name}`,
+              data: user,
+            });
+          default:
+            return res.status(HTTP.BAD_REQUEST).json({
+              message: "Invalid role",
+            });
+        }
       } else {
         return res.status(HTTP.BAD_REQUEST).json({
           message: `Incorrect Password`,
@@ -46,6 +62,36 @@ export const signInUser = async (req: Request, res: Response) => {
     });
   }
 };
+// export const signInUser = async (req: Request, res: Response) => {
+//   try {
+//     const { email, password } = req.body;
+//     const user = await userModel.findOne({ email });
+
+//     if (user?.verify) {
+//       const comp = await compare(password, user?.password);
+
+//       console.log(user);
+//       if (comp) {
+//         return res.status(HTTP.CREATED).json({
+//           message: `welcome ${user.name}`,
+//           data: user,
+//         });
+//       } else {
+//         return res.status(HTTP.BAD_REQUEST).json({
+//           message: `Incorrect Password`,
+//         });
+//       }
+//     } else {
+//       return res.status(HTTP.BAD_REQUEST).json({
+//         message: `please register as a user`,
+//       });
+//     }
+//   } catch (error) {
+//     return res.status(HTTP.BAD_REQUEST).json({
+//       message: `error signing in :${error}`,
+//     });
+//   }
+// // };
 
 export const getAllUser = async (req: Request, res: Response) => {
   try {
