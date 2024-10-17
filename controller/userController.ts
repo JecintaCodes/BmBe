@@ -217,7 +217,7 @@ export const registerAdmin = async (req: Request, res: Response) => {
         address,
         telNumb,
         password: harsh,
-        secretCode: secret,
+        secretCode,
         role: "ADMIN",
         verify: true,
       });
