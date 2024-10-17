@@ -11,6 +11,9 @@ const paymentModel = new mongoose_1.Schema({
     status: {
         type: String,
     },
+    customerCode: {
+        type: String,
+    },
     userID: {
         type: String,
     },
@@ -22,6 +25,10 @@ const paymentModel = new mongoose_1.Schema({
     },
     amount: {
         type: Number,
+    },
+    QTYOrder: {
+        type: Number,
+        default: 0,
     },
     users: [
         {

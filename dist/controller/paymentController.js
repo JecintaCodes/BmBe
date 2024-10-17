@@ -12,14 +12,13 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.verifyPayment = exports.makePayment = void 0;
+exports.verifyOrderListPayment = exports.makeOrderListPayment = exports.verifyPayment = exports.makePayment = void 0;
 const mainError_1 = require("../error/mainError");
 const axios_1 = __importDefault(require("axios"));
 const dotenv_1 = __importDefault(require("dotenv"));
 const paymentModel_1 = __importDefault(require("../model/paymentModel"));
 const userMode_1 = __importDefault(require("../model/userMode"));
 const orderModel_1 = __importDefault(require("../model/orderModel"));
-const mongoose_1 = require("mongoose");
 dotenv_1.default.config();
 const makePayment = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
@@ -34,11 +33,11 @@ const makePayment = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
         const params = JSON.stringify({
             email,
             amount: `${parseInt(amount) * 100}`,
-            // callback_url: `https://boundary-market.web.app/verify-payment`,
-            callback_url: `http://localhost:5173/verify-payment`,
+            callback_url: `https://boundary-market1.web.app/verify-payment`,
+            // callback_url: `http://localhost:5173/verify-payment`,
             metadata: {
-                // cancel_action: "https://boundary-market.web.app/product",
-                cancel_action: "http://localhost:5173/product",
+                cancel_action: "https://boundary-market1.web.app/product",
+                // cancel_action: "http://localhost:5173/product",
             },
         });
         const result = yield axios_1.default.post(url, params, config).then((res) => {
@@ -56,8 +55,104 @@ const makePayment = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
     }
 });
 exports.makePayment = makePayment;
+// export const verifyPayment = async (req: Request, res: Response) => {
+//   try {
+//     const { refNumb, amount, email, userID } = req.body;
+//     const config = {
+//       headers: {
+//         Authorization: `Bearer ${process.env.PAYSTACKKEY}`,
+//         "Content-Type": "application/json",
+//       },
+//     };
+//     const url: string = `https://api.paystack.co/transaction/verify/${refNumb}`;
+//     const user = await userMode.findOne({ email });
+//     if (!user) {
+//       return res.status(404).json({ message: "User not found" });
+//     }
+//     //check for duplcate
+//     const checkDuplicate = await paymentModel.findOne({ refNumb });
+//     if (checkDuplicate) {
+//       return res.status(404).json({
+//         message: "Duplicate reference id",
+//       });
+//     }
+//     const result = await axios.get(url, config).then((res) => {
+//       return res.data.data;
+//     });
+//     console.log(result);
+//     // Save payment data to database
+//     // const session = await startSession();
+//     // const paymentData = new paymentModel({
+//     //   refNumb,
+//     //   email,
+//     //   address: user?.address,
+//     //   phoneNumb: user?.telNumb,
+//     //   amount: result?.amount / 100,
+//     //   status: result?.status,
+//     //   user: user._id,
+//     //   // QTYOrder,
+//     // });
+//     // paymentData?.users?.push(new Types.ObjectId(userID?._id));
+//     // await paymentData.save();
+//     // // user?.payments.push(new Types.ObjectId(paymentData?._id))
+//     // // console.log(paymentData);
+//     // const order = new orderModel({
+//     //   productOwner: user?.name,
+//     //   amount: paymentData.amount,
+//     //   address: user?.address,
+//     //   phoneNumb: paymentData?.phoneNumb,
+//     //   amountPaid: paymentData?.amount,
+//     //   QTYOrder: paymentData?.QTYOrder,
+//     //   status: paymentData?.status,
+//     //   user: user?._id, // Associate order with user
+//     // });
+//     // Validate payment data
+//     if (!result || result.status !== "success") {
+//       return res.status(400).json({ message: "Invalid payment data" });
+//     }
+//     // Save payment data to database
+//     const paymentData = new paymentModel({
+//       refNumb,
+//       email,
+//       address: user.address,
+//       phoneNumb: user.telNumb,
+//       amount: result.amount / 100,
+//       status: result.status,
+//       user: user._id,
+//     });
+//     await paymentData.save();
+//     // Create order
+//     const order = new orderModel({
+//       productOwner: user.name,
+//       amount: paymentData.amount,
+//       address: user.address,
+//       phoneNumb: paymentData.phoneNumb,
+//       amountPaid: paymentData.amount,
+//       status: paymentData.status,
+//       user: user._id,
+//     });
+//     await order.save();
+//     // Update user document with new order ID
+//     await userMode.findByIdAndUpdate(user._id, {
+//       $addToSet: { orders: order._id },
+//     });
+//     // order?.users?.push(new Types.ObjectId(user?._id));
+//     // await order.save();
+//     // Update user document with new order ID
+//     // await userMode.findByIdAndUpdate(user?._id, {
+//     //   $addToSet: { orders: order._id },
+//     // });
+//     return res.status(HTTP.CREATED).json({
+//       message: "ur payment is successful",
+//       data: result,
+//     });
+//   } catch (error: any) {
+//     return res.status(HTTP.BAD_REQUEST).json({
+//       message: `error making payment ${error?.message}`,
+//     });
+//   }
+// };
 const verifyPayment = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a;
     try {
         const { refNumb, amount, email, userID } = req.body;
         const config = {
@@ -71,54 +166,373 @@ const verifyPayment = (req, res) => __awaiter(void 0, void 0, void 0, function* 
         if (!user) {
             return res.status(404).json({ message: "User not found" });
         }
-        //check for duplcate
+        // Check for duplicate reference ID
         const checkDuplicate = yield paymentModel_1.default.findOne({ refNumb });
         if (checkDuplicate) {
-            return res.status(404).json({
-                message: "Duplicate reference id",
-            });
+            return res.status(404).json({ message: "Duplicate reference ID" });
         }
         const result = yield axios_1.default.get(url, config).then((res) => {
             return res.data.data;
         });
-        console.log(result);
+        // Validate payment data
+        if (!result || result.status !== "success") {
+            return res.status(400).json({ message: "Invalid payment data" });
+        }
+        // Generate unique delivery code
+        let deliveryCode;
+        do {
+            deliveryCode = Math.floor(100000 + Math.random() * 900000).toString();
+        } while (yield orderModel_1.default.findOne({ deliveryCode }));
         // Save payment data to database
-        const session = yield (0, mongoose_1.startSession)();
         const paymentData = new paymentModel_1.default({
             refNumb,
             email,
-            address: user === null || user === void 0 ? void 0 : user.address,
-            phoneNumb: user === null || user === void 0 ? void 0 : user.telNumb,
-            amount: (result === null || result === void 0 ? void 0 : result.amount) / 100,
-            status: result === null || result === void 0 ? void 0 : result.status,
+            address: user.address,
+            phoneNumb: user.telNumb,
+            amount: result.amount / 100,
+            status: result.status,
             user: user._id,
+            customerCode: deliveryCode,
         });
-        (_a = paymentData === null || paymentData === void 0 ? void 0 : paymentData.users) === null || _a === void 0 ? void 0 : _a.push(new mongoose_1.Types.ObjectId(userID === null || userID === void 0 ? void 0 : userID._id));
         yield paymentData.save();
-        // user?.payments.push(new Types.ObjectId(paymentData?._id))
-        // console.log(paymentData);
+        // Create order
         const order = new orderModel_1.default({
-            //  title: product.title,
-            productOwner: user === null || user === void 0 ? void 0 : user._id,
+            productOwner: user.name,
             amount: paymentData.amount,
-            address: user === null || user === void 0 ? void 0 : user.address,
-            amountPaid: paymentData === null || paymentData === void 0 ? void 0 : paymentData.amount,
+            address: user.address,
+            phoneNumb: paymentData.phoneNumb,
+            amountPaid: paymentData.amount,
+            status: paymentData.status,
+            user: user._id,
+            customerCode: paymentData === null || paymentData === void 0 ? void 0 : paymentData.customerCode,
         });
-        // order.users.push(new Types.ObjectId(user?._id))
-        // user?.order?.push(new Types.ObjectId(order))
         yield order.save();
-        return res.status(mainError_1.HTTP.CREATED).json({
-            message: "ur payment is successful",
+        // Update user document with payment and order IDs
+        yield userMode_1.default.findByIdAndUpdate(user._id, {
+            $addToSet: {
+                payments: paymentData._id,
+                orders: order._id,
+            },
+        });
+        return res.status(201).json({
+            message: "Payment successful",
             data: result,
+            order: order,
         });
     }
     catch (error) {
-        return res.status(mainError_1.HTTP.BAD_REQUEST).json({
-            message: `error making payment ${error === null || error === void 0 ? void 0 : error.message}`,
+        console.error(error);
+        return res.status(400).json({
+            message: `Error making payment: ${error.message}`,
         });
     }
 });
 exports.verifyPayment = verifyPayment;
+// export const verifyOrderListPayment = async (req: Request, res: Response) => {
+//   try {
+//     const {
+//       lists,
+//       customerCode,
+//       title,
+//       amount,
+//       totalAmount,
+//       refNumb,
+//       email,
+//       userID,
+//     } = req.body;
+//     const user = await userMode.findOne({ _id: userID });
+//     if (!user) {
+//       return res.status(404).json({ message: "User not found" });
+//     }
+//     const config = {
+//       headers: {
+//         Authorization: `Bearer ${process.env.PAYSTACKKEY}`,
+//         "Content-Type": "application/json",
+//       },
+//     };
+//     const url: string = `https://api.paystack.co/transaction/verify/${refNumb}`;
+//     const result = await axios.get(url, config).then((res) => {
+//       return res.data.data;
+//     });
+//     // Validate payment data
+//     if (!result || result.status !== "success") {
+//       return res.status(400).json({ message: "Invalid payment data" });
+//     }
+//     // Check for duplicate customer code
+//     const checkDuplicateOrder = await orderModel.findOne({ customerCode });
+//     if (checkDuplicateOrder) {
+//       return res.status(404).json({ message: "Duplicate customer code" });
+//     }
+//     // Check for duplicate reference ID
+//     const checkDuplicatePayment = await paymentModel.findOne({ refNumb });
+//     if (checkDuplicatePayment) {
+//       return res.status(404).json({ message: "Duplicate reference ID" });
+//     }
+//     // Generate unique order code
+//     let orderCode;
+//     do {
+//       orderCode = Math.floor(100000 + Math.random() * 900000).toString();
+//     } while (await orderModel.findOne({ orderCode }));
+//     // Save payment data to database
+//     const paymentData = new paymentModel({
+//       refNumb,
+//       email: user?.email,
+//       amount: result.amount / 100,
+//       status: result.status,
+//       user: user._id,
+//       customerCode: orderCode,
+//     });
+//     await paymentData.save();
+//     // Create orders for each item
+//     lists.forEach(async (item: any) => {
+//       const { title, amount } = item;
+//       // Check for duplicate customer code
+//       const checkDuplicateOrder = await orderModel.findOne({ customerCode });
+//       if (checkDuplicateOrder) {
+//         return res.status(404).json({ message: "Duplicate customer code" });
+//       }
+//       // Generate unique order code
+//       let orderCode;
+//       do {
+//         orderCode = Math.floor(100000 + Math.random() * 900000).toString();
+//       } while (await orderModel.findOne({ orderCode }));
+//       // Save order data to database
+//       const orderData = new orderModel({
+//         title,
+//         amount,
+//         totalAmount: paymentData?.amount,
+//         user: user._id,
+//         customerCode: paymentData?.customerCode,
+//         payment: paymentData._id,
+//         productOwner: user?.name,
+//       });
+//       await orderData.save();
+//       // Update user document with order ID
+//       await userMode.findByIdAndUpdate(user._id, {
+//         $addToSet: {
+//           orders: orderData._id,
+//         },
+//       });
+//     });
+//     // Save order data to database
+//     // const orderData = new orderModel({
+//     //   title,
+//     //   amount,
+//     //   totalAmount: paymentData?.amount,
+//     //   user: user._id,
+//     //   customerCode: paymentData?.customerCode,
+//     //   payment: paymentData._id,
+//     //   productOwner: user?.name,
+//     // });
+//     // await orderData.save();
+//     // // Update user document with order and payment IDs
+//     // await userMode.findByIdAndUpdate(user._id, {
+//     //   $addToSet: {
+//     //     orders: orderData._id,
+//     //     payments: paymentData._id,
+//     //   },
+//     // });
+//     return res.status(201).json({
+//       message: "Orders and payment created successfully",
+//     });
+//   } catch (error: any) {
+//     console.error(error);
+//     return res.status(400).json({
+//       message: `Error creating order and payment: ${error.message}`,
+//     });
+//   }
+// };
+const makeOrderListPayment = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { amount, email } = req.body;
+        // Validate input
+        if (!amount || !email) {
+            return res.status(400).json({ message: "Invalid input" });
+        }
+        const config = {
+            headers: {
+                Authorization: `Bearer ${process.env.PAYSTACKKEY}`,
+                "Content-Type": "application/json",
+            },
+        };
+        const url = `https://api.paystack.co/transaction/initialize`;
+        const params = JSON.stringify({
+            email,
+            amount: `${parseInt(amount) * 100}`,
+            callback_url: `http://localhost:5173/verify-payment-list`,
+            metadata: {
+                cancel_action: "http://localhost:5173/list",
+            },
+        });
+        const result = yield axios_1.default.post(url, params, config);
+        console.log(result.data);
+        return res.status(201).json({
+            message: "Payment initialized successfully",
+            data: result.data.data,
+        });
+    }
+    catch (error) {
+        console.error(error);
+        return res.status(400).json({
+            message: `Error initializing payment: ${error.message}`,
+        });
+    }
+});
+exports.makeOrderListPayment = makeOrderListPayment;
+const verifyOrderListPayment = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { lists, customerCode, title, amount, totalAmount, refNumb, email, userID, } = req.body;
+        // Validate input
+        if (!lists ||
+            !title ||
+            !amount ||
+            !totalAmount ||
+            !refNumb ||
+            !email ||
+            !userID) {
+            return res.status(400).json({ message: "Invalid input" });
+        }
+        const user = yield userMode_1.default.findOne({ _id: userID });
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
+        // Verify payment
+        const config = {
+            headers: {
+                Authorization: `Bearer ${process.env.PAYSTACKKEY}`,
+                "Content-Type": "application/json",
+            },
+        };
+        const url = `https://api.paystack.co/transaction/verify/${refNumb}`;
+        // const result = await axios.get(url, config);
+        // Validate payment data
+        // if (!result || result.status !== "success") {
+        //   return res.status(400).json({ message: "Invalid payment data" });
+        // }
+        const result = yield axios_1.default.get(url, config).then((res) => {
+            return res.data.data;
+        });
+        console.log(result.data);
+        // Validate payment data
+        if (!result || result.status !== "success") {
+            return res.status(400).json({ message: "Invalid payment data" });
+        }
+        // Save payment data
+        const paymentData = new paymentModel_1.default({
+            refNumb,
+            email: user === null || user === void 0 ? void 0 : user.email,
+            amount,
+            status: "success",
+            user: user._id,
+            customerCode,
+        });
+        yield paymentData.save();
+        // Create orders for each item
+        lists.forEach((item) => __awaiter(void 0, void 0, void 0, function* () {
+            const { title, amount } = item;
+            // Save order data
+            const orderData = new orderModel_1.default({
+                title,
+                amount,
+                totalAmount,
+                user: user._id,
+                customerCode,
+                payment: paymentData._id,
+                productOwner: user === null || user === void 0 ? void 0 : user.name,
+            });
+            yield orderData.save();
+            // Update user document with order ID
+            yield userMode_1.default.findByIdAndUpdate(user._id, {
+                $addToSet: {
+                    orders: orderData._id,
+                    payments: paymentData._id,
+                },
+            });
+        }));
+        return res.status(201).json({
+            message: "Orders and payment created successfully",
+        });
+    }
+    catch (error) {
+        console.error(error);
+        return res.status(400).json({
+            message: `Error creating order and payment: ${error === null || error === void 0 ? void 0 : error.message}`,
+        });
+    }
+});
+exports.verifyOrderListPayment = verifyOrderListPayment;
+// {
+// export const createOrderAndPayment = async (req: Request, res: Response) => {
+//   try {
+//     const { lists, refNumb, email, userID } = req.body;
+//     const user = await userMode.findOne({ _id: userID });
+//     if (!user) {
+//       return res.status(404).json({ message: "User not found" });
+//     }
+//     // Verify payment using Paystack's API
+//     const config = {
+//       headers: {
+//         Authorization: `Bearer ${process.env.PAYSTACKKEY}`,
+//         "Content-Type": "application/json",
+//       },
+//     };
+//     const url: string = `https://api.paystack.co/transaction/verify/${refNumb}`;
+//     const result = await axios.get(url, config).then((res) => {
+//       return res.data.data;
+//     });
+//     // Validate payment data
+//     if (!result || result.status !== "success") {
+//       return res.status(400).json({ message: "Invalid payment data" });
+//     }
+//     // Save payment data to database
+//     const paymentData = new paymentModel({
+//       refNumb,
+//       email,
+//       amount: result.amount / 100,
+//       status: result.status,
+//       user: user._id,
+//     });
+//     await paymentData.save();
+//     // Create orders for each item
+//     lists.forEach(async (item) => {
+//       const { title, amount, customerCode } = item;
+//       // Check for duplicate customer code
+//       const checkDuplicateOrder = await orderModel.findOne({ customerCode });
+//       if (checkDuplicateOrder) {
+//         return res.status(404).json({ message: "Duplicate customer code" });
+//       }
+//       // Generate unique order code
+//       let orderCode;
+//       do {
+//         orderCode = Math.floor(100000 + Math.random() * 900000).toString();
+//       } while (await orderModel.findOne({ orderCode }));
+//       // Save order data to database
+//       const orderData = new orderModel({
+//         customerCode,
+//         title,
+//         amount,
+//         user: user._id,
+//         orderCode,
+//         payment: paymentData._id,
+//       });
+//       await orderData.save();
+//       // Update user document with order ID
+//       await userMode.findByIdAndUpdate(user._id, {
+//         $addToSet: {
+//           orders: orderData._id,
+//         },
+//       });
+//     });
+//     return res.status(201).json({
+//       message: "Orders and payment created successfully",
+//     });
+//   } catch (error: any) {
+//     console.error(error);
+//     return res.status(400).json({
+//       message: `Error creating orders and payment: ${error.message}`,
+//     });
+//   }
+// };
 // export const splitPayment = async (req: Request, res: Response) => {
 //   try {
 //     // const
@@ -129,7 +543,7 @@ exports.verifyPayment = verifyPayment;
 //       },
 //     };
 //     const { amount, email } = req.body;
-//     const paystackAmount = amount * 0.01;
+//     const paystackAmount = amount * 0.01;h
 //     const platformAmount = amount * 0.1;
 //     const customerAmount = amount - paystackAmount - platformAmount;
 //     // Split payment between accounts
@@ -179,4 +593,4 @@ exports.verifyPayment = verifyPayment;
 //       message: `error splitting payment ${error?.message}`,
 //     });
 //   }
-// };
+// }

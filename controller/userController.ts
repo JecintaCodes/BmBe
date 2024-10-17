@@ -4,6 +4,12 @@ import { HTTP } from "../error/mainError";
 import { genSalt, hash, compare } from "bcryptjs";
 import { streamUpload } from "../utils/stream";
 import { role } from "../utils/role";
+import * as crypto from "crypto";
+import env from "dotenv";
+env.config();
+
+// ...
+
 // import { createClient } from "redis";
 
 // const client = createClient()
@@ -188,10 +194,22 @@ export const registerAdmin = async (req: Request, res: Response) => {
     // if (catchResult) {
     //   user = catchResult;
     // } else {
-    const secret = "AjegunleCore";
 
+    // Input validation
+    // Input validation
+    if (!name || !email || !telNumb || !password || !secretCode || !address) {
+      return res.status(HTTP.BAD_REQUEST).json({
+        message: "Missing required fields",
+        error: "Validation error",
+      });
+    }
+
+    const secret = process.env.SECRETCODE;
+    if (!secret) {
+      throw new Error("SECRETCODE environment variable is not set");
+    }
     if (secret === secretCode) {
-      const salt = await genSalt(2);
+      const salt = await genSalt(10);
       const harsh = await hash(password, salt);
       const user = await userModel.create({
         name,
@@ -199,7 +217,6 @@ export const registerAdmin = async (req: Request, res: Response) => {
         address,
         telNumb,
         password: harsh,
-        status,
         secretCode,
         role: "ADMIN",
         verify: true,
@@ -224,7 +241,57 @@ export const registerAdmin = async (req: Request, res: Response) => {
     });
   }
 };
+// export const registerAdmin = async (req: Request, res: Response) => {
+//   try {
+//     const { name, email, telNumb, password, secretCode, status, address } =
+//       req.body;
 
+//     // Input validation
+//     if (!name || !email || !telNumb || !password || !secretCode || !address) {
+//       return res
+//         .status(HTTP.BAD_REQUEST)
+//         .json({ message: "Missing required fields" });
+//     }
+
+//     // Environment variable for secret code
+//     const SECRET_CODE = process.env.SECRET_CODE;
+
+//     // Compare secret code securely
+//     const isSecretCodeValid = crypto.timingSafeEqual(
+//       Buffer.from(SECRET_CODE),
+//       Buffer.from(secretCode)
+//     );
+//     if (!isSecretCodeValid) {
+//       return res
+//         .status(HTTP.BAD_REQUEST)
+//         .json({ message: "Invalid secret code" });
+//     }
+
+//     // Increased salt rounds for better security
+//     const salt = await genSalt(12);
+//     const hasrh = await hash(password, salt);
+
+//     // Create user
+//     const user = await userModel.create({
+//       name,
+//       email,
+//       address,
+//       telNumb,
+//       password: hasrh,
+//       role: "ADMIN",
+//       verify: true,
+//     });
+
+//     return res
+//       .status(HTTP.CREATED)
+//       .json({ message: "Admin created successfully", data: user });
+//   } catch (error) {
+//     console.error(error);
+//     return res
+//       .status(HTTP.INTERNAL_SERVER_ERROR)
+//       .json({ message: "Error creating admin" });
+//   }
+// };
 export const registerUser = async (req: Request, res: Response) => {
   try {
     const { adminID } = req.params;

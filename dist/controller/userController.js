@@ -28,6 +28,7 @@ const signInUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
         const user = yield userMode_1.default.findOne({ email });
         if (user === null || user === void 0 ? void 0 : user.verify) {
             const comp = yield (0, bcryptjs_1.compare)(password, user === null || user === void 0 ? void 0 : user.password);
+            console.log(user);
             if (comp) {
                 return res.status(mainError_1.HTTP.CREATED).json({
                     message: `welcome ${user.name}`,
@@ -93,6 +94,7 @@ const updateUserImage = (req, res) => __awaiter(void 0, void 0, void 0, function
             image: secure_url,
             imageID: public_id,
         }, { new: true });
+        console.log(secure_url, public_id);
         return res.status(mainError_1.HTTP.CREATED).json({
             message: `user avatar updated`,
             data: user,

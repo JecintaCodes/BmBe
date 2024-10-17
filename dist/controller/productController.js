@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.deleteProductList = exports.getLists = exports.viewLists = exports.createProductList = exports.deleteProduct = exports.viewOrders = exports.viewUserProduct = exports.purchaseProduct = exports.updateProducts = exports.readOneProduct = exports.readProduct = exports.createProduct = void 0;
+exports.createProductList = exports.deleteProductList = exports.viewLists = exports.deleteProduct = exports.viewOrders = exports.viewUserProduct = exports.purchaseProduct = exports.updateProducts = exports.readOneProduct = exports.readOrders = exports.readProduct = exports.createProduct = void 0;
 const userMode_1 = __importDefault(require("../model/userMode"));
 const productModel_1 = __importDefault(require("../model/productModel"));
 const stream_1 = require("../utils/stream");
@@ -72,6 +72,21 @@ const readProduct = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
     }
 });
 exports.readProduct = readProduct;
+const readOrders = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const order = yield orderModel_1.default.find();
+        return res.status(mainError_1.HTTP.OK).json({
+            message: "reading all the orders",
+            data: order,
+        });
+    }
+    catch (error) {
+        return res.status(mainError_1.HTTP.BAD_REQUEST).json({
+            message: `can't read data ${error} `,
+        });
+    }
+});
+exports.readOrders = readOrders;
 const readOneProduct = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { productID } = req.params;
@@ -205,20 +220,20 @@ const viewOrders = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
             },
         });
         if (orders) {
-            return res.status(mainError_1.HTTP.CREATED).json({
-                message: "product updated",
+            return res.status(mainError_1.HTTP.OK).json({
+                message: "Orders retrieved",
                 data: orders,
             });
         }
         else {
             return res.status(mainError_1.HTTP.BAD_REQUEST).json({
-                message: `this is not a product `,
+                message: `User not found or no orders`,
             });
         }
     }
     catch (error) {
         return res.status(mainError_1.HTTP.BAD_REQUEST).json({
-            message: `can't update product ${error}`,
+            message: `Error retrieving orders: ${error}`,
         });
     }
 });
@@ -260,6 +275,59 @@ const deleteProduct = (req, res) => __awaiter(void 0, void 0, void 0, function* 
     }
 });
 exports.deleteProduct = deleteProduct;
+const viewLists = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { title } = req.body;
+        const list = yield listModel_1.default.find({ title });
+        return res.status(mainError_1.HTTP.OK).json({
+            message: "all user gotten list",
+            data: list,
+        });
+    }
+    catch (error) {
+        return res.status(mainError_1.HTTP.BAD_REQUEST).json({
+            message: `error creating product ${error}`,
+        });
+    }
+});
+exports.viewLists = viewLists;
+// export const getLists = async (req: Request, res: Response) => {
+//   try {
+//     const { userID } = req.params;
+//     const list = await userModel.findById(userID).populate({
+//       path: "lists",
+//       options: {
+//         sort: {
+//           createdAt: -1,
+//         },
+//       },
+//     });
+//     return res.status(HTTP.OK).json({
+//       message: "all user gotten list",
+//       data: list,
+//     });
+//   } catch (error) {
+//     return res.status(HTTP.BAD_REQUEST).json({
+//       message: `error creating product ${error}`,
+//     });
+//   }
+// };
+const deleteProductList = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { listID } = req.params;
+        const list = yield listModel_1.default.findByIdAndDelete(listID);
+        return res.status(mainError_1.HTTP.OK).json({
+            message: "deleted list",
+            data: list,
+        });
+    }
+    catch (error) {
+        return res.status(mainError_1.HTTP.BAD_REQUEST).json({
+            message: `error creating product ${error}`,
+        });
+    }
+});
+exports.deleteProductList = deleteProductList;
 const createProductList = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { userID } = req.params;
@@ -301,61 +369,51 @@ const createProductList = (req, res) => __awaiter(void 0, void 0, void 0, functi
     }
 });
 exports.createProductList = createProductList;
-const viewLists = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    try {
-        const { title } = req.body;
-        const list = yield listModel_1.default.find({ title });
-        return res.status(mainError_1.HTTP.OK).json({
-            message: "all user gotten list",
-            data: list,
-        });
-    }
-    catch (error) {
-        return res.status(mainError_1.HTTP.BAD_REQUEST).json({
-            message: `error creating product ${error}`,
-        });
-    }
-});
-exports.viewLists = viewLists;
-const getLists = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    try {
-        const { userID } = req.params;
-        const list = yield userMode_1.default.findById(userID).populate({
-            path: "lists",
-            options: {
-                sort: {
-                    createdAt: -1,
-                },
-            },
-        });
-        return res.status(mainError_1.HTTP.OK).json({
-            message: "all user gotten list",
-            data: list,
-        });
-    }
-    catch (error) {
-        return res.status(mainError_1.HTTP.BAD_REQUEST).json({
-            message: `error creating product ${error}`,
-        });
-    }
-});
-exports.getLists = getLists;
-const deleteProductList = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    try {
-        const { listID } = req.params;
-        const list = yield listModel_1.default.findByIdAndDelete(listID);
-        return res.status(mainError_1.HTTP.OK).json({
-            message: "deleted list",
-            data: list,
-        });
-    }
-    catch (error) {
-        return res.status(mainError_1.HTTP.BAD_REQUEST).json({
-            message: `error creating product ${error}`,
-        });
-    }
-});
-exports.deleteProductList = deleteProductList;
+// class OrderController {
+//   async getDailyOrders() {
+//     const dailyOrders = await orderModel.aggregate([
+//       {
+//         $group: {
+//           _id: { $dateToString: { format: "%Y-%m-%d", date: "$date" } },
+//           totalOrders: { $sum: 1 },
+//         },
+//       },
+//       {
+//         $sort: { _id: -1 },
+//       },
+//     ]);
+//     return dailyOrders;
+//   }
+//   async getMonthlyOrders() {
+//     const monthlyOrders = await orderModel.aggregate([
+//       {
+//         $group: {
+//           _id: { $dateToString: { format: "%Y-%m", date: "$date" } },
+//           totalOrders: { $sum: 1 },
+//         },
+//       },
+//       {
+//         $sort: { _id: -1 },
+//       },
+//     ]);
+//     return monthlyOrders;
+//   }
+//   async getYearlyOrders() {
+//     const yearlyOrders = await orderModel.aggregate([
+//       {
+//         $group: {
+//           _id: { $dateToString: { format: "%Y", date: "$date" } },
+//           totalOrders: { $sum: 1 },
+//         },
+//       },
+//       {
+//         $sort: { _id: -1 },
+//       },
+//     ]);
+//     return yearlyOrders;
+//   }
+// }
+// export default OrderController;
 // export const updateProductName = async (req: Request, res: Response) => {
 //   try {
 //     const { productID } = req.params;
@@ -660,3 +718,45 @@ exports.deleteProductList = deleteProductList;
 //     });
 //   }
 // };
+// class OrderController {
+//   async getMonthlyOrders() {
+//     const monthlyOrders = await orderModel.aggregate([
+//       {
+//         $group: {
+//           _id: { $dateToString: { format: "%Y-%m", date: "$date" } },
+//           totalOrders: { $sum: 1 },
+//         },
+//       },
+//       {
+//         $sort: { _id: 1 },
+//       },
+//     ]);
+//     return monthlyOrders;
+//   }
+// }
+// export default OrderController;
+class OrderController {
+    getMonthlyOrders() {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const monthlyOrders = yield orderModel_1.default.aggregate([
+                    {
+                        $group: {
+                            _id: { $dateToString: { format: "%Y-%m", date: "$date" } },
+                            totalOrders: { $sum: 1 },
+                        },
+                    },
+                    {
+                        $sort: { _id: 1 },
+                    },
+                ]);
+                return monthlyOrders;
+            }
+            catch (error) {
+                console.error("Error fetching monthly orders:", error);
+                throw error;
+            }
+        });
+    }
+}
+exports.default = OrderController;

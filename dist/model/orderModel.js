@@ -9,7 +9,7 @@ const orderModel = new mongoose_1.Schema({
     productOwner: {
         type: String,
     },
-    orderOwner: {
+    status: {
         type: String,
     },
     phoneNumb: {
@@ -21,10 +21,22 @@ const orderModel = new mongoose_1.Schema({
     description: {
         type: String,
     },
+    totalAmount: {
+        type: Number,
+    },
     amountPaid: {
         type: Number,
     },
+    date: {
+        type: Date,
+    },
+    customerCode: {
+        type: String,
+    },
     address: {
+        type: String,
+    },
+    category: {
         type: String,
     },
     QTYOrder: {
@@ -39,6 +51,12 @@ const orderModel = new mongoose_1.Schema({
         {
             type: mongoose_1.Types.ObjectId,
             ref: "payments",
+        },
+    ],
+    lists: [
+        {
+            type: mongoose_1.Types.ObjectId,
+            ref: "lists",
         },
     ],
 }, { timestamps: true });
