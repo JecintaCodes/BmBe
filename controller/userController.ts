@@ -25,18 +25,18 @@ export const signInUser = async (req: Request, res: Response) => {
 
       if (comp) {
         // Redirect to respective screens
-        switch (user.role) {
-          case "admin":
+        switch (user?.role) {
+          case "ADMIN":
             return res.status(HTTP.CREATED).json({
               message: `Welcome Admin ${user.name}`,
               data: user,
             });
-          case "buyer":
+          case "BUYER":
             return res.status(HTTP.CREATED).json({
               message: `Welcome Buyer ${user.name}`,
               data: user,
             });
-          case "user":
+          case "USER":
             return res.status(HTTP.CREATED).json({
               message: `Welcome User ${user.name}`,
               data: user,
