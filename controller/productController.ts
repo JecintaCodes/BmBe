@@ -58,6 +58,19 @@ export const readProduct = async (req: Request, res: Response) => {
     });
   }
 };
+export const readOrders = async (req: Request, res: Response) => {
+  try {
+    const order = await orderModel.find();
+    return res.status(HTTP.OK).json({
+      message: "reading all the orders",
+      data: order,
+    });
+  } catch (error) {
+    return res.status(HTTP.BAD_REQUEST).json({
+      message: `can't read data ${error} `,
+    });
+  }
+};
 
 export const readOneProduct = async (req: Request, res: Response) => {
   try {
@@ -207,18 +220,18 @@ export const viewOrders = async (req: Request, res: Response) => {
     });
 
     if (orders) {
-      return res.status(HTTP.CREATED).json({
-        message: "product updated",
+      return res.status(HTTP.OK).json({
+        message: "Orders retrieved",
         data: orders,
       });
     } else {
       return res.status(HTTP.BAD_REQUEST).json({
-        message: `this is not a product `,
+        message: `User not found or no orders`,
       });
     }
   } catch (error) {
     return res.status(HTTP.BAD_REQUEST).json({
-      message: `can't update product ${error}`,
+      message: `Error retrieving orders: ${error}`,
     });
   }
 };
@@ -361,6 +374,57 @@ export const createProductList = async (req: Request, res: Response) => {
   }
 };
 
+// class OrderController {
+//   async getDailyOrders() {
+//     const dailyOrders = await orderModel.aggregate([
+//       {
+//         $group: {
+//           _id: { $dateToString: { format: "%Y-%m-%d", date: "$date" } },
+//           totalOrders: { $sum: 1 },
+//         },
+//       },
+//       {
+//         $sort: { _id: -1 },
+//       },
+//     ]);
+
+//     return dailyOrders;
+//   }
+
+//   async getMonthlyOrders() {
+//     const monthlyOrders = await orderModel.aggregate([
+//       {
+//         $group: {
+//           _id: { $dateToString: { format: "%Y-%m", date: "$date" } },
+//           totalOrders: { $sum: 1 },
+//         },
+//       },
+//       {
+//         $sort: { _id: -1 },
+//       },
+//     ]);
+
+//     return monthlyOrders;
+//   }
+
+//   async getYearlyOrders() {
+//     const yearlyOrders = await orderModel.aggregate([
+//       {
+//         $group: {
+//           _id: { $dateToString: { format: "%Y", date: "$date" } },
+//           totalOrders: { $sum: 1 },
+//         },
+//       },
+//       {
+//         $sort: { _id: -1 },
+//       },
+//     ]);
+
+//     return yearlyOrders;
+//   }
+// }
+
+// export default OrderController;
 // export const updateProductName = async (req: Request, res: Response) => {
 //   try {
 //     const { productID } = req.params;
@@ -701,3 +765,46 @@ export const createProductList = async (req: Request, res: Response) => {
 //     });
 //   }
 // };
+// class OrderController {
+//   async getMonthlyOrders() {
+//     const monthlyOrders = await orderModel.aggregate([
+//       {
+//         $group: {
+//           _id: { $dateToString: { format: "%Y-%m", date: "$date" } },
+//           totalOrders: { $sum: 1 },
+//         },
+//       },
+//       {
+//         $sort: { _id: 1 },
+//       },
+//     ]);
+
+//     return monthlyOrders;
+//   }
+// }
+
+// export default OrderController;
+
+class OrderController {
+  async getMonthlyOrders() {
+    try {
+      const monthlyOrders = await orderModel.aggregate([
+        {
+          $group: {
+            _id: { $dateToString: { format: "%Y-%m", date: "$date" } },
+            totalOrders: { $sum: 1 },
+          },
+        },
+        {
+          $sort: { _id: 1 },
+        },
+      ]);
+      return monthlyOrders;
+    } catch (error) {
+      console.error("Error fetching monthly orders:", error);
+      throw error;
+    }
+  }
+}
+
+export default OrderController;

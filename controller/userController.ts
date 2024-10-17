@@ -87,6 +87,7 @@ export const updateUserImage = async (req: Request, res: Response) => {
       },
       { new: true }
     );
+    console.log(secure_url, public_id);
     return res.status(HTTP.CREATED).json({
       message: `user avatar updated`,
       data: user,

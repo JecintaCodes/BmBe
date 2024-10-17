@@ -7,6 +7,8 @@ interface iPayment {
   status: string;
   userID: string;
   phoneNumb: string;
+  customerCode: string;
+  QTYOrder: number;
   address: string;
   users: {}[];
   products: {}[];
@@ -26,6 +28,9 @@ const paymentModel = new Schema<iPaymentData>(
     status: {
       type: String,
     },
+    customerCode: {
+      type: String,
+    },
     userID: {
       type: String,
     },
@@ -37,6 +42,10 @@ const paymentModel = new Schema<iPaymentData>(
     },
     amount: {
       type: Number,
+    },
+    QTYOrder: {
+      type: Number,
+      default: 0,
     },
     users: [
       {

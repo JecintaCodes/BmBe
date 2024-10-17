@@ -13,7 +13,7 @@ import {
 } from "../controller/userController";
 import multer from "multer";
 const upload = multer().single("image");
-
+console.log(upload);
 const userRouter = Router();
 
 userRouter.route("/:adminID/register-users").post(registerUser);
