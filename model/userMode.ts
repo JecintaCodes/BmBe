@@ -12,7 +12,7 @@ interface iUser {
   description?: string;
   telNumb?: string;
   products: {}[];
-  myStore: {}[];
+  myStore: [];
   order: {}[];
   verify: boolean;
   verifyToken: string;

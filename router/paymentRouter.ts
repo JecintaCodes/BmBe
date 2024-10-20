@@ -1,10 +1,5 @@
 import { Router } from "express";
-import {
-  makeOrderListPayment,
-  verifyOrderListPayment,
-  makePayment,
-  verifyPayment,
-} from "../controller/paymentController";
+import { makePayment, verifyPayment } from "../controller/paymentController";
 
 const paymentRouter = Router();
 

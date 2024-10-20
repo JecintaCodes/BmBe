@@ -6,6 +6,7 @@ import { HTTP } from "../error/mainError";
 import { Types } from "mongoose";
 import orderModel from "../model/orderModel";
 import listModel from "../model/listModel";
+import mongoose from "mongoose";
 
 export const createProduct = async (req: Request, res: Response) => {
   try {
@@ -60,10 +61,12 @@ export const readProduct = async (req: Request, res: Response) => {
 };
 export const readOrders = async (req: Request, res: Response) => {
   try {
-    const order = await orderModel.find();
+    const orders = await orderModel.find({}, null, {
+      sort: { createdAt: "descending" },
+    });
     return res.status(HTTP.OK).json({
       message: "reading all the orders",
-      data: order,
+      data: orders,
     });
   } catch (error) {
     return res.status(HTTP.BAD_REQUEST).json({
@@ -181,6 +184,12 @@ export const viewUserProduct = async (req: Request, res: Response) => {
   try {
     const { userID } = req.params;
 
+    if (!mongoose.Types.ObjectId.isValid(userID)) {
+      return res.status(HTTP.BAD_REQUEST).json({
+        message: "Invalid userID",
+      });
+    }
+    // }
     const user = await userModel.findById(userID).populate({
       path: "myStore",
       options: {
@@ -203,6 +212,34 @@ export const viewUserProduct = async (req: Request, res: Response) => {
   } catch (error) {
     return res.status(HTTP.BAD_REQUEST).json({
       message: `can't update product ${error}`,
+    });
+  }
+};
+export const viewProductUser = async (req: Request, res: Response) => {
+  try {
+    const { productID } = req.params;
+
+    if (!mongoose.Types.ObjectId.isValid(productID)) {
+      return res.status(HTTP.BAD_REQUEST).json({
+        message: "Invalid productID",
+      });
+    }
+
+    const user = await userModel.findById(productID);
+
+    if (user) {
+      return res.status(HTTP.OK).json({
+        message: "product fetched",
+        data: user,
+      });
+    } else {
+      return res.status(HTTP.BAD_REQUEST).json({
+        message: `product not found`,
+      });
+    }
+  } catch (error) {
+    return res.status(HTTP.BAD_REQUEST).json({
+      message: `server error: ${error}`,
     });
   }
 };
