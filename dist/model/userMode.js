@@ -27,7 +27,16 @@ const userModel = new mongoose_1.Schema({
     role: {
         type: String,
     },
+    subAccountCode: {
+        type: String,
+    },
     accountNumb: {
+        type: String,
+    },
+    bankName: {
+        type: String,
+    },
+    bankCode: {
         type: String,
     },
     verifyToken: {

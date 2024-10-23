@@ -33,7 +33,7 @@ const productModel = new mongoose_1.Schema({
     },
     QTYinStock: {
         type: Number,
-        default: 0,
+        default: 1,
     },
     users: {
         type: mongoose_1.Types.ObjectId,

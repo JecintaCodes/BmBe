@@ -43,6 +43,7 @@ const productRouter = (0, express_1.Router)();
 productRouter.route("/:userID/register-products").post(upload, productController_1.createProduct);
 productRouter.route("/get-all-product").get(productController_1.readProduct);
 productRouter.route("/get-all-order").get(productController_1.readOrders);
+productRouter.route("/get-all-list").get(productController_1.viewAllLists);
 productRouter.route("/:productID/get-one-product").get(productController_1.readOneProduct);
 productRouter
     .route("/:userID/:productID/purchase-product")

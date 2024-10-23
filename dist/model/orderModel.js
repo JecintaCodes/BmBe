@@ -4,7 +4,7 @@ const mongoose_1 = require("mongoose");
 const orderModel = new mongoose_1.Schema({
     title: {
         type: String,
-        require: true,
+        required: true, // Changed 'require' to 'required'
     },
     productOwner: {
         type: String,
@@ -29,6 +29,7 @@ const orderModel = new mongoose_1.Schema({
     },
     date: {
         type: Date,
+        default: Date.now, // Added default date
     },
     customerCode: {
         type: String,
@@ -43,6 +44,15 @@ const orderModel = new mongoose_1.Schema({
         type: Number,
         default: 0,
     },
+    productDetails: [
+        {
+            productID: { type: mongoose_1.Schema.Types.ObjectId, ref: "Product" },
+            quantity: { type: Number },
+            amount: { type: Number },
+            platformFee: { type: Number },
+            amountAfterFee: { type: Number },
+        },
+    ],
     users: {
         type: mongoose_1.Types.ObjectId,
         ref: "users",
@@ -51,6 +61,13 @@ const orderModel = new mongoose_1.Schema({
         {
             type: mongoose_1.Types.ObjectId,
             ref: "payments",
+        },
+    ],
+    splitPayments: [
+        {
+            subaccount: String,
+            amount: Number,
+            platformFee: Number,
         },
     ],
     lists: [

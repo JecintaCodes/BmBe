@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.createProductList = exports.deleteProductList = exports.viewLists = exports.deleteProduct = exports.viewOrders = exports.viewProductUser = exports.viewUserProduct = exports.purchaseProduct = exports.updateProducts = exports.readOneProduct = exports.readOrders = exports.readProduct = exports.createProduct = void 0;
+exports.createProductList = exports.deleteProductList = exports.viewAllLists = exports.viewLists = exports.deleteProduct = exports.viewOrders = exports.viewProductUser = exports.viewUserProduct = exports.purchaseProduct = exports.updateProducts = exports.readOneProduct = exports.readOrders = exports.readProduct = exports.createProduct = void 0;
 const userMode_1 = __importDefault(require("../model/userMode"));
 const productModel_1 = __importDefault(require("../model/productModel"));
 const stream_1 = require("../utils/stream");
@@ -328,6 +328,21 @@ const viewLists = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     }
 });
 exports.viewLists = viewLists;
+const viewAllLists = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const list = yield listModel_1.default.find();
+        return res.status(mainError_1.HTTP.OK).json({
+            message: "all user gotten list",
+            data: list,
+        });
+    }
+    catch (error) {
+        return res.status(mainError_1.HTTP.BAD_REQUEST).json({
+            message: `error creating product ${error}`,
+        });
+    }
+});
+exports.viewAllLists = viewAllLists;
 // export const getLists = async (req: Request, res: Response) => {
 //   try {
 //     const { userID } = req.params;
@@ -365,47 +380,46 @@ const deleteProductList = (req, res) => __awaiter(void 0, void 0, void 0, functi
     }
 });
 exports.deleteProductList = deleteProductList;
-const createProductList = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    try {
-        const { userID } = req.params;
-        const { lists } = req.body;
-        console.log("Request body:", req.body);
-        console.log("User ID:", userID);
-        if (!lists || !Array.isArray(lists)) {
-            return res.status(mainError_1.HTTP.BAD_REQUEST).json({
-                message: "Invalid request: lists array required",
-            });
-        }
-        const user = yield userMode_1.default.findById(userID);
-        if (user) {
-            const createdLists = yield Promise.all(lists.map((list) => __awaiter(void 0, void 0, void 0, function* () {
-                const newList = yield listModel_1.default.create({
-                    title: list.title,
-                    amount: list.amount,
-                    userID: user._id,
-                });
-                return newList;
-            })));
-            // console.log("Created lists:", createdLists);
-            yield user.updateOne({
-                $push: { lists: { $each: createdLists.map((list) => list._id) } },
-            });
-            return res.status(mainError_1.HTTP.CREATED).json(createdLists);
-        }
-        else {
-            return res.status(mainError_1.HTTP.BAD_REQUEST).json({
-                message: `you are not a user`,
-            });
-        }
-    }
-    catch (error) {
-        console.error(error);
-        return res.status(mainError_1.HTTP.BAD_REQUEST).json({
-            message: "Internal Server Error",
-        });
-    }
-});
-exports.createProductList = createProductList;
+// export const createProductList = async (req: Request, res: Response) => {
+//   try {
+//     const { userID } = req.params;
+//     const { lists }: { lists: any[] } = req.body;
+//     console.log("Request body:", req.body);
+//     console.log("User ID:", userID);
+//     if (!lists || !Array.isArray(lists)) {
+//       return res.status(HTTP.BAD_REQUEST).json({
+//         message: "Invalid request: lists array required",
+//       });
+//     }
+//     const user = await userModel.findById(userID);
+//     if (user) {
+//       const createdLists = await Promise.all(
+//         lists.map(async (list) => {
+//           const newList = await listModel.create({
+//             title: list.title,
+//             amount: list.amount,
+//             userID: user._id,
+//           });
+//           return newList;
+//         })
+//       );
+//       // console.log("Created lists:", createdLists);
+//       // await user.updateOne({
+//       //   $push: { lists: { $each: createdLists.map((list) => list._id) } },
+//       // });
+//       return res.status(HTTP.CREATED).json(createdLists);
+//     } else {
+//       return res.status(HTTP.BAD_REQUEST).json({
+//         message: `you are not a user`,
+//       });
+//     }
+//   } catch (error) {
+//     console.error(error);
+//     return res.status(HTTP.BAD_REQUEST).json({
+//       message: "Internal Server Error",
+//     });
+//   }
+// };
 // class OrderController {
 //   async getDailyOrders() {
 //     const dailyOrders = await orderModel.aggregate([
@@ -772,6 +786,47 @@ exports.createProductList = createProductList;
 //   }
 // }
 // export default OrderController;
+// listController.ts
+const createProductList = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { userID } = req.params;
+        const { lists } = req.body;
+        console.log("Request body:", req.body);
+        console.log("User ID:", userID);
+        if (!lists || !Array.isArray(lists)) {
+            return res.status(mainError_1.HTTP.BAD_REQUEST).json({
+                message: "Invalid request: lists array required",
+            });
+        }
+        const user = yield userMode_1.default.findById(userID);
+        if (!user) {
+            return res.status(mainError_1.HTTP.BAD_REQUEST).json({
+                message: `User not found`,
+            });
+        }
+        const createdLists = yield Promise.all(lists.map((list) => __awaiter(void 0, void 0, void 0, function* () {
+            const newList = yield listModel_1.default.create({
+                title: list.title,
+                amount: list.amount,
+                userID: user._id,
+                refNumb: Math.floor(100000 + Math.random() * 900000).toString(), // Generate unique refNumb
+            });
+            return newList;
+        })));
+        // Add created lists to user document
+        yield user.updateOne({
+            $push: { lists: { $each: createdLists.map((list) => list._id) } },
+        });
+        return res.status(mainError_1.HTTP.CREATED).json(createdLists);
+    }
+    catch (error) {
+        console.error(error);
+        return res.status(mainError_1.HTTP.BAD_REQUEST).json({
+            message: "Server error",
+        });
+    }
+});
+exports.createProductList = createProductList;
 class OrderController {
     getMonthlyOrders() {
         return __awaiter(this, void 0, void 0, function* () {

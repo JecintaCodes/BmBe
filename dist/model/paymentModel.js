@@ -48,5 +48,12 @@ const paymentModel = new mongoose_1.Schema({
             ref: "orders",
         },
     ],
+    splitPayments: [
+        {
+            subaccount: String,
+            amount: Number,
+            platformFee: Number,
+        },
+    ],
 }, { timestamps: true });
 exports.default = (0, mongoose_1.model)("payments", paymentModel);

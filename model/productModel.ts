@@ -43,6 +43,7 @@ const productModel = new Schema(
     },
     amount: {
       type: Number,
+      require: true,
     },
     toggle: {
       type: Boolean,
