@@ -12,6 +12,7 @@ import OrderController, {
   readOrders,
   viewProductUser,
   viewAllLists,
+  searchProducts,
 } from "../controller/productController";
 import multer from "multer";
 const upload = multer().single("image");
@@ -31,7 +32,7 @@ productRouter.route("/:userID/view-orders").get(viewOrders);
 productRouter.route("/:userID/:productID/delete-product").delete(deleteProduct);
 productRouter.route("/:userID/create-list").post(createProductList);
 productRouter.route("/:listID/delete-list").delete(deleteProductList);
-// productRouter.route("/:userID/get-list").get(getLists);
+productRouter.route("/search").get(searchProducts);
 // import express, { Router } from "express";import OrderController from "../controllers/OrderController";
 
 // const router: Router = express.Router();

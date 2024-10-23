@@ -906,3 +906,40 @@ class OrderController {
 }
 
 export default OrderController;
+
+// export const searchProducts = async (req: Request, res: Response) => {
+//   try {
+//     const { title } = req.body;
+//     const product = await productModel.find({ title });
+//     return res.status(HTTP.OK).json({
+//       message: `gotten product`,
+//       data: product,
+//     });
+//   } catch (error: any) {
+//     return res.status(HTTP.BAD_REQUEST).json({
+//       message: `error seaching message ${error?.message}`,
+//     });
+//   }
+// };
+
+export const searchProducts = async (req: Request, res: Response) => {
+  try {
+    const { title } = req.query;
+    const product = await productModel.find({
+      title: { $regex: `^${title}`, $options: "i" }, // Partial matching from start
+    });
+    if (!product.length) {
+      return res.status(HTTP.BAD_REQUEST).json({
+        message: `No products found with title ${title}`,
+      });
+    }
+    return res.status(HTTP.OK).json({
+      message: `Products found`,
+      data: product,
+    });
+  } catch (error: any) {
+    return res.status(HTTP.BAD_REQUEST).json({
+      message: `Error searching products: ${error?.message}`,
+    });
+  }
+};
