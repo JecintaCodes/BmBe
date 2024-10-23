@@ -250,7 +250,7 @@ export const registerAdmin = async (req: Request, res: Response) => {
       });
     }
 
-    const secret = process.env.SECRETCODE;
+    const secret = "AjegunleCore";
     if (!secret) {
       throw new Error("SECRETCODE environment variable is not set");
     }
