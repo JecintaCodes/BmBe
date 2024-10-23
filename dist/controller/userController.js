@@ -18,6 +18,9 @@ const mainError_1 = require("../error/mainError");
 const bcryptjs_1 = require("bcryptjs");
 const stream_1 = require("../utils/stream");
 const role_1 = require("../utils/role");
+const dotenv_1 = __importDefault(require("dotenv"));
+dotenv_1.default.config();
+// ...
 // import { createClient } from "redis";
 // const client = createClient()
 //   .on("error", (err) => console.error(err))
@@ -28,12 +31,29 @@ const signInUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
         const user = yield userMode_1.default.findOne({ email });
         if (user === null || user === void 0 ? void 0 : user.verify) {
             const comp = yield (0, bcryptjs_1.compare)(password, user === null || user === void 0 ? void 0 : user.password);
-            console.log(user);
             if (comp) {
-                return res.status(mainError_1.HTTP.CREATED).json({
-                    message: `welcome ${user.name}`,
-                    data: user,
-                });
+                // Redirect to respective screens
+                switch (user === null || user === void 0 ? void 0 : user.role) {
+                    case "ADMIN":
+                        return res.status(mainError_1.HTTP.CREATED).json({
+                            message: `Welcome Admin ${user.name}`,
+                            data: user,
+                        });
+                    case "BUYER":
+                        return res.status(mainError_1.HTTP.CREATED).json({
+                            message: `Welcome Buyer ${user.name}`,
+                            data: user,
+                        });
+                    case "USER":
+                        return res.status(mainError_1.HTTP.CREATED).json({
+                            message: `Welcome User ${user.name}`,
+                            data: user,
+                        });
+                    default:
+                        return res.status(mainError_1.HTTP.BAD_REQUEST).json({
+                            message: "Invalid role",
+                        });
+                }
             }
             else {
                 return res.status(mainError_1.HTTP.BAD_REQUEST).json({
@@ -54,6 +74,34 @@ const signInUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
     }
 });
 exports.signInUser = signInUser;
+// export const signInUser = async (req: Request, res: Response) => {
+//   try {
+//     const { email, password } = req.body;
+//     const user = await userModel.findOne({ email });
+//     if (user?.verify) {
+//       const comp = await compare(password, user?.password);
+//       console.log(user);
+//       if (comp) {
+//         return res.status(HTTP.CREATED).json({
+//           message: `welcome ${user.name}`,
+//           data: user,
+//         });
+//       } else {
+//         return res.status(HTTP.BAD_REQUEST).json({
+//           message: `Incorrect Password`,
+//         });
+//       }
+//     } else {
+//       return res.status(HTTP.BAD_REQUEST).json({
+//         message: `please register as a user`,
+//       });
+//     }
+//   } catch (error) {
+//     return res.status(HTTP.BAD_REQUEST).json({
+//       message: `error signing in :${error}`,
+//     });
+//   }
+// // };
 const getAllUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const user = yield userMode_1.default.find();
@@ -180,9 +228,20 @@ const registerAdmin = (req, res) => __awaiter(void 0, void 0, void 0, function* 
         // if (catchResult) {
         //   user = catchResult;
         // } else {
-        const secret = "AjegunleCore";
+        // Input validation
+        // Input validation
+        if (!name || !email || !telNumb || !password || !secretCode || !address) {
+            return res.status(mainError_1.HTTP.BAD_REQUEST).json({
+                message: "Missing required fields",
+                error: "Validation error",
+            });
+        }
+        const secret = process.env.SECRETCODE;
+        if (!secret) {
+            throw new Error("SECRETCODE environment variable is not set");
+        }
         if (secret === secretCode) {
-            const salt = yield (0, bcryptjs_1.genSalt)(2);
+            const salt = yield (0, bcryptjs_1.genSalt)(10);
             const harsh = yield (0, bcryptjs_1.hash)(password, salt);
             const user = yield userMode_1.default.create({
                 name,
@@ -190,7 +249,6 @@ const registerAdmin = (req, res) => __awaiter(void 0, void 0, void 0, function* 
                 address,
                 telNumb,
                 password: harsh,
-                status,
                 secretCode,
                 role: "ADMIN",
                 verify: true,
@@ -218,6 +276,51 @@ const registerAdmin = (req, res) => __awaiter(void 0, void 0, void 0, function* 
     }
 });
 exports.registerAdmin = registerAdmin;
+// export const registerAdmin = async (req: Request, res: Response) => {
+//   try {
+//     const { name, email, telNumb, password, secretCode, status, address } =
+//       req.body;
+//     // Input validation
+//     if (!name || !email || !telNumb || !password || !secretCode || !address) {
+//       return res
+//         .status(HTTP.BAD_REQUEST)
+//         .json({ message: "Missing required fields" });
+//     }
+//     // Environment variable for secret code
+//     const SECRET_CODE = process.env.SECRET_CODE;
+//     // Compare secret code securely
+//     const isSecretCodeValid = crypto.timingSafeEqual(
+//       Buffer.from(SECRET_CODE),
+//       Buffer.from(secretCode)
+//     );
+//     if (!isSecretCodeValid) {
+//       return res
+//         .status(HTTP.BAD_REQUEST)
+//         .json({ message: "Invalid secret code" });
+//     }
+//     // Increased salt rounds for better security
+//     const salt = await genSalt(12);
+//     const hasrh = await hash(password, salt);
+//     // Create user
+//     const user = await userModel.create({
+//       name,
+//       email,
+//       address,
+//       telNumb,
+//       password: hasrh,
+//       role: "ADMIN",
+//       verify: true,
+//     });
+//     return res
+//       .status(HTTP.CREATED)
+//       .json({ message: "Admin created successfully", data: user });
+//   } catch (error) {
+//     console.error(error);
+//     return res
+//       .status(HTTP.INTERNAL_SERVER_ERROR)
+//       .json({ message: "Error creating admin" });
+//   }
+// };
 const registerUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { adminID } = req.params;

@@ -13,6 +13,7 @@ interface iPayment {
   users: {}[];
   products: {}[];
   orders: {}[];
+  splitPayments: [{}];
 }
 
 interface iPaymentData extends iPayment, Document {}
@@ -63,6 +64,13 @@ const paymentModel = new Schema<iPaymentData>(
       {
         type: Types.ObjectId,
         ref: "orders",
+      },
+    ],
+    splitPayments: [
+      {
+        subaccount: String,
+        amount: Number,
+        platformFee: Number,
       },
     ],
   },

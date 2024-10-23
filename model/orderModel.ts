@@ -18,6 +18,8 @@ interface iOrder {
   users: {};
   payments: {}[];
   lists: {}[];
+  splitPayments: [{}];
+  productDetails: [{}];
 }
 
 interface iOrderData extends iOrder, Document {}
@@ -26,7 +28,7 @@ const orderModel = new Schema(
   {
     title: {
       type: String,
-      require: true,
+      required: true, // Changed 'require' to 'required'
     },
     productOwner: {
       type: String,
@@ -55,6 +57,7 @@ const orderModel = new Schema(
 
     date: {
       type: Date,
+      default: Date.now, // Added default date
     },
     customerCode: {
       type: String,
@@ -69,6 +72,15 @@ const orderModel = new Schema(
       type: Number,
       default: 0,
     },
+    productDetails: [
+      {
+        productID: { type: Schema.Types.ObjectId, ref: "Product" },
+        quantity: { type: Number },
+        amount: { type: Number },
+        platformFee: { type: Number },
+        amountAfterFee: { type: Number },
+      },
+    ],
 
     users: {
       type: Types.ObjectId,
@@ -80,6 +92,13 @@ const orderModel = new Schema(
         ref: "payments",
       },
     ],
+    splitPayments: [
+      {
+        subaccount: String,
+        amount: Number,
+        platformFee: Number,
+      },
+    ],
     lists: [
       {
         type: Types.ObjectId,
@@ -89,4 +108,5 @@ const orderModel = new Schema(
   },
   { timestamps: true }
 );
+
 export default model<iOrderData>("orders", orderModel);

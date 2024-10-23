@@ -7,6 +7,9 @@ interface iUser {
   imageID?: string;
   password: string;
   secretCode: string;
+  bankName: string;
+  bankCode?: string;
+  subAccountCode: string;
   address: string;
   accountNumb: string;
   description?: string;
@@ -52,7 +55,16 @@ const userModel = new Schema<iUserData>(
     role: {
       type: String,
     },
+    subAccountCode: {
+      type: String,
+    },
     accountNumb: {
+      type: String,
+    },
+    bankName: {
+      type: String,
+    },
+    bankCode: {
       type: String,
     },
     verifyToken: {

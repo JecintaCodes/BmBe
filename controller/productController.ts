@@ -326,6 +326,20 @@ export const viewLists = async (req: Request, res: Response) => {
     });
   }
 };
+export const viewAllLists = async (req: Request, res: Response) => {
+  try {
+    const list = await listModel.find();
+
+    return res.status(HTTP.OK).json({
+      message: "all user gotten list",
+      data: list,
+    });
+  } catch (error) {
+    return res.status(HTTP.BAD_REQUEST).json({
+      message: `error creating product ${error}`,
+    });
+  }
+};
 // export const getLists = async (req: Request, res: Response) => {
 //   try {
 //     const { userID } = req.params;
@@ -364,52 +378,52 @@ export const deleteProductList = async (req: Request, res: Response) => {
     });
   }
 };
-export const createProductList = async (req: Request, res: Response) => {
-  try {
-    const { userID } = req.params;
-    const { lists }: { lists: any[] } = req.body;
+// export const createProductList = async (req: Request, res: Response) => {
+//   try {
+//     const { userID } = req.params;
+//     const { lists }: { lists: any[] } = req.body;
 
-    console.log("Request body:", req.body);
-    console.log("User ID:", userID);
+//     console.log("Request body:", req.body);
+//     console.log("User ID:", userID);
 
-    if (!lists || !Array.isArray(lists)) {
-      return res.status(HTTP.BAD_REQUEST).json({
-        message: "Invalid request: lists array required",
-      });
-    }
+//     if (!lists || !Array.isArray(lists)) {
+//       return res.status(HTTP.BAD_REQUEST).json({
+//         message: "Invalid request: lists array required",
+//       });
+//     }
 
-    const user = await userModel.findById(userID);
-    if (user) {
-      const createdLists = await Promise.all(
-        lists.map(async (list) => {
-          const newList = await listModel.create({
-            title: list.title,
-            amount: list.amount,
-            userID: user._id,
-          });
-          return newList;
-        })
-      );
+//     const user = await userModel.findById(userID);
+//     if (user) {
+//       const createdLists = await Promise.all(
+//         lists.map(async (list) => {
+//           const newList = await listModel.create({
+//             title: list.title,
+//             amount: list.amount,
+//             userID: user._id,
+//           });
+//           return newList;
+//         })
+//       );
 
-      // console.log("Created lists:", createdLists);
+//       // console.log("Created lists:", createdLists);
 
-      await user.updateOne({
-        $push: { lists: { $each: createdLists.map((list) => list._id) } },
-      });
+//       // await user.updateOne({
+//       //   $push: { lists: { $each: createdLists.map((list) => list._id) } },
+//       // });
 
-      return res.status(HTTP.CREATED).json(createdLists);
-    } else {
-      return res.status(HTTP.BAD_REQUEST).json({
-        message: `you are not a user`,
-      });
-    }
-  } catch (error) {
-    console.error(error);
-    return res.status(HTTP.BAD_REQUEST).json({
-      message: "Internal Server Error",
-    });
-  }
-};
+//       return res.status(HTTP.CREATED).json(createdLists);
+//     } else {
+//       return res.status(HTTP.BAD_REQUEST).json({
+//         message: `you are not a user`,
+//       });
+//     }
+//   } catch (error) {
+//     console.error(error);
+//     return res.status(HTTP.BAD_REQUEST).json({
+//       message: "Internal Server Error",
+//     });
+//   }
+// };
 
 // class OrderController {
 //   async getDailyOrders() {
@@ -821,7 +835,54 @@ export const createProductList = async (req: Request, res: Response) => {
 // }
 
 // export default OrderController;
+// listController.ts
 
+export const createProductList = async (req: Request, res: Response) => {
+  try {
+    const { userID } = req.params;
+    const { lists }: { lists: any[] } = req.body;
+
+    console.log("Request body:", req.body);
+    console.log("User ID:", userID);
+
+    if (!lists || !Array.isArray(lists)) {
+      return res.status(HTTP.BAD_REQUEST).json({
+        message: "Invalid request: lists array required",
+      });
+    }
+
+    const user = await userModel.findById(userID);
+    if (!user) {
+      return res.status(HTTP.BAD_REQUEST).json({
+        message: `User not found`,
+      });
+    }
+
+    const createdLists = await Promise.all(
+      lists.map(async (list) => {
+        const newList = await listModel.create({
+          title: list.title,
+          amount: list.amount,
+          userID: user._id,
+          refNumb: Math.floor(100000 + Math.random() * 900000).toString(), // Generate unique refNumb
+        });
+        return newList;
+      })
+    );
+
+    // Add created lists to user document
+    await user.updateOne({
+      $push: { lists: { $each: createdLists.map((list) => list._id) } },
+    });
+
+    return res.status(HTTP.CREATED).json(createdLists);
+  } catch (error) {
+    console.error(error);
+    return res.status(HTTP.BAD_REQUEST).json({
+      message: "Server error",
+    });
+  }
+};
 class OrderController {
   async getMonthlyOrders() {
     try {

@@ -4,7 +4,7 @@ import { HTTP } from "../error/mainError";
 import { genSalt, hash, compare } from "bcryptjs";
 import { streamUpload } from "../utils/stream";
 import { role } from "../utils/role";
-import * as crypto from "crypto";
+import axios from "axios";
 import env from "dotenv";
 env.config();
 
@@ -338,45 +338,238 @@ export const registerAdmin = async (req: Request, res: Response) => {
 //       .json({ message: "Error creating admin" });
 //   }
 // };
+
 export const registerUser = async (req: Request, res: Response) => {
   try {
     const { adminID } = req.params;
 
-    const { name, email, password, status, address, telNumb, accountNumb } =
-      req.body;
+    const {
+      name,
+      email,
+      password,
+      status,
+      address,
+      telNumb,
+      accountNumb,
+      bankName,
+      bankCode,
+    } = req.body;
 
     const admin = await userModel.findById(adminID);
 
-    if (admin?.role === role?.admin) {
-      const salt = await genSalt(2);
-      const harsh = await hash(password, salt);
+    if (admin?.role === role.admin) {
+      const salt = await genSalt(12);
+      const hashedPassword = await hash(password, salt);
 
+      // Create user
       const user = await userModel.create({
         name,
         email,
         telNumb,
         address,
         accountNumb,
-        password: harsh,
+        bankName,
+        bankCode,
+        password: hashedPassword,
         status,
         role: "USER",
         verify: true,
       });
+
+      // Create Paystack subaccount
+      const paystackKey = process.env.PAYSTACKKEY;
+      const paystackConfig = {
+        headers: {
+          Authorization: `Bearer ${paystackKey}`,
+          "Content-Type": "application/json",
+        },
+      };
+      const subaccountData = {
+        business_name: user.name,
+        bank_code: user.bankCode,
+        account_number: user.accountNumb,
+        percentage_charge: 10,
+      };
+
+      try {
+        const subaccountResponse = await axios.post(
+          "https://api.paystack.co/subaccount",
+          subaccountData,
+          paystackConfig
+        );
+        const subaccountCode = subaccountResponse.data.data.id;
+
+        // Update user with subaccount code
+        await userModel.findByIdAndUpdate(user._id, {
+          subAccountCode: subaccountCode,
+        });
+
+        // Retrieve updated user data
+        const updatedUser = await userModel.findById(user._id);
+
+        return res.status(HTTP.CREATED).json({
+          message: "User created",
+          data: updatedUser,
+        });
+      } catch (paystackError) {
+        console.error("Paystack API Error:", paystackError);
+        return res.status(HTTP.BAD_REQUEST).json({
+          message: "Error creating Paystack subaccount",
+        });
+      }
+    } else {
+      return res.status(HTTP.BAD_REQUEST).json({
+        message: `You are not an admin`,
+      });
+    }
+  } catch (error) {
+    console.error("Error creating user:", error);
+    return res.status(HTTP.BAD_REQUEST).json({
+      message: `Error creating user ${error}`,
+    });
+  }
+};
+
+export const registerUsers = async (req: Request, res: Response) => {
+  try {
+    const { adminID } = req.params;
+
+    const {
+      name,
+      email,
+      password,
+      status,
+      address,
+      telNumb,
+      accountNumb,
+      bankName,
+      bankCode,
+    } = req.body;
+
+    const admin = await userModel.findById(adminID);
+
+    if (admin?.role === role.admin) {
+      const salt = await genSalt(2);
+      const hashedPassword = await hash(password, salt);
+
+      // Create user
+      const user = await userModel.create({
+        name,
+        email,
+        telNumb,
+        address,
+        accountNumb,
+        bankName,
+        bankCode,
+        password: hashedPassword,
+        status,
+        role: "USER",
+        verify: true,
+      });
+
+      // Create Paystack subaccount
+      const paystackKey = process.env.PAYSTACKKEY;
+      const paystackConfig = {
+        headers: {
+          Authorization: `Bearer ${paystackKey}`,
+          "Content-Type": "application/json",
+        },
+      };
+      const subaccountData = {
+        business_name: user.name,
+        bank_code: user.bankCode,
+        account_number: user.accountNumb,
+        percentage_charge: 11,
+      };
+
+      try {
+        const subaccountResponse = await axios.post(
+          `https://api.paystack.co/subaccount`,
+          subaccountData,
+          paystackConfig
+        );
+        const subaccountCode = subaccountResponse.data.data.id;
+        console.log(subaccountCode);
+        // Update user with subaccount code
+        await userModel.findByIdAndUpdate(user._id, {
+          subAccountCode: subaccountCode,
+        });
+      } catch (paystackError) {
+        console.error("Paystack API Error:", paystackError);
+        return res.status(HTTP.BAD_REQUEST).json({
+          message: "Error creating Paystack subaccount",
+        });
+      }
+
       return res.status(HTTP.CREATED).json({
-        message: "user created",
+        message: "User created",
         data: user,
       });
     } else {
       return res.status(HTTP.BAD_REQUEST).json({
-        message: `you are not an admin`,
+        message: `You are not an admin`,
       });
     }
   } catch (error) {
+    console.error("Error creating user:", error);
     return res.status(HTTP.BAD_REQUEST).json({
-      message: `error creating user ${error}`,
+      message: `Error creating user ${error}`,
     });
   }
 };
+
+// export const registerUser = async (req: Request, res: Response) => {
+//   try {
+//     const { adminID } = req.params;
+
+//     const {
+//       name,
+//       email,
+//       password,
+//       status,
+//       address,
+//       telNumb,
+//       accountNumb,
+//       subAccountCode,
+//       bankName,
+//       bankCode,
+//     } = req.body;
+
+//     const admin = await userModel.findById(adminID);
+
+//     if (admin?.role === role?.admin) {
+//       const salt = await genSalt(2);
+//       const harsh = await hash(password, salt);
+
+//       const user = await userModel.create({
+//         name,
+//         email,
+//         telNumb,
+//         address,
+//         accountNumb,
+//         bankName,
+//         bankCode,
+//         subAccountCode,
+//         password: harsh,
+//         status,
+//         role: "USER",
+//         verify: true,
+//       });
+//       return res.status(HTTP.CREATED).json({
+//         message: "user created",
+//         data: user,
+//       });
+//     } else {
+//       return res.status(HTTP.BAD_REQUEST).json({
+//         message: `you are not an admin`,
+//       });
+//     }
+//   } catch (error) {
+//     return res.status(HTTP.BAD_REQUEST).json({
+//       message: `error creating user ${error}`,
+//     });
+//   }
+// };
 
 export const registerBuyer = async (req: Request, res: Response) => {
   try {

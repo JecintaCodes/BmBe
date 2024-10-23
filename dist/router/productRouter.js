@@ -48,6 +48,7 @@ productRouter
     .route("/:userID/:productID/purchase-product")
     .post(productController_1.purchaseProduct);
 productRouter.route("/:userID/view-user-products").get(productController_1.viewUserProduct);
+productRouter.route("/:userID/view-products-user").get(productController_1.viewProductUser);
 productRouter.route("/:userID/view-orders").get(productController_1.viewOrders);
 productRouter.route("/:userID/:productID/delete-product").delete(productController_1.deleteProduct);
 productRouter.route("/:userID/create-list").post(productController_1.createProductList);

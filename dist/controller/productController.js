@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.createProductList = exports.deleteProductList = exports.viewLists = exports.deleteProduct = exports.viewOrders = exports.viewUserProduct = exports.purchaseProduct = exports.updateProducts = exports.readOneProduct = exports.readOrders = exports.readProduct = exports.createProduct = void 0;
+exports.createProductList = exports.deleteProductList = exports.viewLists = exports.deleteProduct = exports.viewOrders = exports.viewProductUser = exports.viewUserProduct = exports.purchaseProduct = exports.updateProducts = exports.readOneProduct = exports.readOrders = exports.readProduct = exports.createProduct = void 0;
 const userMode_1 = __importDefault(require("../model/userMode"));
 const productModel_1 = __importDefault(require("../model/productModel"));
 const stream_1 = require("../utils/stream");
@@ -20,6 +20,7 @@ const mainError_1 = require("../error/mainError");
 const mongoose_1 = require("mongoose");
 const orderModel_1 = __importDefault(require("../model/orderModel"));
 const listModel_1 = __importDefault(require("../model/listModel"));
+const mongoose_2 = __importDefault(require("mongoose"));
 const createProduct = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     var _a;
     try {
@@ -74,10 +75,12 @@ const readProduct = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
 exports.readProduct = readProduct;
 const readOrders = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const order = yield orderModel_1.default.find();
+        const orders = yield orderModel_1.default.find({}, null, {
+            sort: { createdAt: "descending" },
+        });
         return res.status(mainError_1.HTTP.OK).json({
             message: "reading all the orders",
-            data: order,
+            data: orders,
         });
     }
     catch (error) {
@@ -181,6 +184,12 @@ exports.purchaseProduct = purchaseProduct;
 const viewUserProduct = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { userID } = req.params;
+        if (!mongoose_2.default.Types.ObjectId.isValid(userID)) {
+            return res.status(mainError_1.HTTP.BAD_REQUEST).json({
+                message: "Invalid userID",
+            });
+        }
+        // }
         const user = yield userMode_1.default.findById(userID).populate({
             path: "myStore",
             options: {
@@ -208,6 +217,34 @@ const viewUserProduct = (req, res) => __awaiter(void 0, void 0, void 0, function
     }
 });
 exports.viewUserProduct = viewUserProduct;
+const viewProductUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { productID } = req.params;
+        if (!mongoose_2.default.Types.ObjectId.isValid(productID)) {
+            return res.status(mainError_1.HTTP.BAD_REQUEST).json({
+                message: "Invalid productID",
+            });
+        }
+        const user = yield userMode_1.default.findById(productID);
+        if (user) {
+            return res.status(mainError_1.HTTP.OK).json({
+                message: "product fetched",
+                data: user,
+            });
+        }
+        else {
+            return res.status(mainError_1.HTTP.BAD_REQUEST).json({
+                message: `product not found`,
+            });
+        }
+    }
+    catch (error) {
+        return res.status(mainError_1.HTTP.BAD_REQUEST).json({
+            message: `server error: ${error}`,
+        });
+    }
+});
+exports.viewProductUser = viewProductUser;
 const viewOrders = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { userID } = req.params;

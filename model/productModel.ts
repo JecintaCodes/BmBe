@@ -50,7 +50,7 @@ const productModel = new Schema(
     },
     QTYinStock: {
       type: Number,
-      default: 0,
+      default: 1,
     },
 
     users: {

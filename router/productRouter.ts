@@ -11,6 +11,7 @@ import OrderController, {
   viewUserProduct,
   readOrders,
   viewProductUser,
+  viewAllLists,
 } from "../controller/productController";
 import multer from "multer";
 const upload = multer().single("image");
@@ -19,6 +20,7 @@ const productRouter = Router();
 productRouter.route("/:userID/register-products").post(upload, createProduct);
 productRouter.route("/get-all-product").get(readProduct);
 productRouter.route("/get-all-order").get(readOrders);
+productRouter.route("/get-all-list").get(viewAllLists);
 productRouter.route("/:productID/get-one-product").get(readOneProduct);
 productRouter
   .route("/:userID/:productID/purchase-product")
