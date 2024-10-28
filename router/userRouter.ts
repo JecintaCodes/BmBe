@@ -5,6 +5,9 @@ import {
   registerAdmin,
   registerBuyer,
   registerUser,
+  searchDataBase,
+  searchListOrder,
+  searchOrder,
   signInUser,
   updateUserdescription,
   updateUserImage,
@@ -30,5 +33,8 @@ userRouter.route("/:userID/update-image").patch(upload, updateUserImage);
 userRouter.route("/:userID/update-name").patch(updateUserName);
 userRouter.route("/:userID/update-detail").patch(updateUserdescription);
 userRouter.route("/:userID/update-info").patch(upload, updateUserInfo);
+userRouter.route("/search-users").get(searchDataBase);
+userRouter.route("/search-orders").get(searchOrder);
+userRouter.route("/search-list").get(searchListOrder);
 
 export default userRouter;

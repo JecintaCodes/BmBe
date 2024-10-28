@@ -46,14 +46,19 @@ export const mainApp = (app: Application) => {
   //     // credentials: true,
   //   })
   // );
-  app.use(
-    cors({
-      origin: ["http://localhost:5173"], // Allow specific origin
-      methods: ["GET", "POST", "PUT", "DELETE"],
-      allowedHeaders: ["Content-Type", "Authorization"],
-      credentials: true,
-    })
-  );
+  app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
+    console.error(err);
+    res.status(500).json({ message: "Internal Server Error" });
+  });
+  // app.use(
+  //   cors({
+  //     origin: ["http://localhost:5173/"], // Allow specific origin
+  //     methods: ["GET", "POST", "PUT", "DELETE"],
+  //     allowedHeaders: ["Content-Type", "Authorization"],
+  //     credentials: true,
+  //   })
+  // );
+  app.use(cors());
   app.use(express.json());
 
   app.use(morgan("dev"));

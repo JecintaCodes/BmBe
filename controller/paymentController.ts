@@ -7,6 +7,7 @@ import userMode from "../model/userMode";
 import orderModel from "../model/orderModel";
 import productModel from "../model/productModel";
 import listModel from "../model/listModel";
+import { Types } from "mongoose";
 env.config();
 
 export const makePayment = async (req: Request, res: Response) => {
@@ -45,9 +46,143 @@ export const makePayment = async (req: Request, res: Response) => {
     });
   }
 };
+// export const makeListPayments = async (req: Request, res: Response) => {
+//   try {
+//     const { amount, email } = req.body;
+//     const config = {
+//       headers: {
+//         Authorization: `Bearer ${process.env.PAYSTACKKEY}`,
+//         "Content-Type": "application/json",
+//       },
+//     };
+
+//     const url: string = `https://api.paystack.co/transaction/initialize`;
+
+//     const params = JSON.stringify({
+//       email,
+//       amount: `${parseInt(amount) * 100}`,
+//       // callback_url: `https://boundary-market1.web.app/verify-list-payment`,
+//       callback_url: `http://localhost:5173/verify-list-payment`,
+//       metadata: {
+//         // cancel_action: "https://boundary-market1.web.app/add-list",
+//         cancel_action: "http://localhost:5173/add-list",
+//       },
+//     });
+
+//     const result = await axios.post(url, params, config).then((res) => {
+//       return res.data.data;
+//     });
+//     return res.status(HTTP.CREATED).json({
+//       message: "sucessfully make payment",
+//       data: result,
+//     });
+//   } catch (error) {
+//     return res.status(HTTP.BAD_REQUEST).json({
+//       message: `error making payment ${error}`,
+//     });
+//   }
+// };
 export const makeListPayment = async (req: Request, res: Response) => {
   try {
     const { amount, email } = req.body;
+
+    // Define charge rates
+    const chargeRates = {
+      tier1: {
+        minAmount: 0,
+        maxAmount: 1000,
+        chargePercentage: 0,
+        chargeFlat: 100,
+      },
+      tier2: {
+        minAmount: 1001,
+        maxAmount: 10000,
+        chargePercentage: 0,
+        chargeFlat: 200,
+      },
+      tier3: {
+        minAmount: 10001,
+        maxAmount: 20000,
+        chargePercentage: 0,
+        chargeFlat: 300,
+      },
+      tier4: {
+        minAmount: 20001,
+        maxAmount: 30000,
+        chargePercentage: 0,
+        chargeFlat: 400,
+      },
+      tier5: {
+        minAmount: 30001,
+        maxAmount: 40000,
+        chargePercentage: 0,
+        chargeFlat: 500,
+      },
+      tier6: {
+        minAmount: 40001,
+        maxAmount: 50000,
+        chargePercentage: 0,
+        chargeFlat: 500,
+      },
+      tier7: {
+        minAmount: 50001,
+        maxAmount: 60000,
+        chargePercentage: 0,
+        chargeFlat: 600,
+      },
+      tier8: {
+        minAmount: 60001,
+        maxAmount: 70000,
+        chargePercentage: 0,
+        chargeFlat: 700,
+      },
+      tier9: {
+        minAmount: 70001,
+        maxAmount: 80000,
+        chargePercentage: 0,
+        chargeFlat: 800,
+      },
+      tier10: {
+        minAmount: 80001,
+        maxAmount: 90000,
+        chargePercentage: 0,
+        chargeFlat: 900,
+      },
+      tier11: {
+        minAmount: 90001,
+        maxAmount: Infinity,
+        chargePercentage: 0.8,
+        chargeFlat: 1000,
+      },
+    };
+
+    // Calculate charge
+    const calculateCharge = (amount: number) => {
+      for (const tier of Object.values(chargeRates)) {
+        if (amount >= tier.minAmount && amount <= tier.maxAmount) {
+          return amount * (tier.chargePercentage / 100) + tier.chargeFlat;
+        }
+      }
+      return 0;
+    };
+
+    // Calculate total charge
+    const calculateTotalCharge = (amount: number) => {
+      return calculateCharge(amount);
+    };
+
+    // Ensure amount is a number
+    const amountValue: number = parseFloat(amount);
+
+    if (isNaN(amountValue)) {
+      throw new Error("Invalid amount");
+    }
+
+    const yourCharge = calculateCharge(amountValue);
+    const totalCharge = calculateTotalCharge(amountValue);
+    const totalAmount = amountValue + totalCharge;
+
+    // Paystack API configuration
     const config = {
       headers: {
         Authorization: `Bearer ${process.env.PAYSTACKKEY}`,
@@ -59,29 +194,32 @@ export const makeListPayment = async (req: Request, res: Response) => {
 
     const params = JSON.stringify({
       email,
-      amount: `${parseInt(amount) * 100}`,
-      callback_url: `https://boundary-market1.web.app/verify-payment`,
-      // callback_url: `http://localhost:5173/list-verify-payment`,
+      amount: `${Math.floor(totalAmount * 100)}`,
+      callback_url: `https://boundary-market1.web.app/verify-list-payment`,
+      // callback_url: `http://localhost:5173/verify-list-payment`,
       metadata: {
-        cancel_action: "https://boundary-market1.web.app/product",
         // cancel_action: "http://localhost:5173/add-list",
+        cancel_action: "https://boundary-market1.web.app//add-list",
       },
     });
 
     const result = await axios.post(url, params, config).then((res) => {
       return res.data.data;
     });
+
     return res.status(HTTP.CREATED).json({
-      message: "sucessfully make payment",
+      message: "Successfully made payment",
       data: result,
+      yourCharge: yourCharge.toFixed(2),
+      totalCharge: totalCharge.toFixed(2),
+      totalAmount: totalAmount.toFixed(2),
     });
   } catch (error) {
     return res.status(HTTP.BAD_REQUEST).json({
-      message: `error making payment ${error}`,
+      message: `Error making payment: ${error}`,
     });
   }
 };
-
 // export const makePayments = async (req: Request, res: Response) => {
 //   try {
 //     const { amount, email, productIDs } = req.body;
@@ -691,19 +829,20 @@ export const verifyOrderListPayment = async (req: Request, res: Response) => {
         },
       });
     });
+    const totalAmounts = lists.reduce((acc, item) => acc + item.amount, 0);
     const listData = new listModel({
       refNumb,
       title: "Order List",
       email: user.email,
-      amount: totalAmount,
-      totalAmount,
+      amount: totalAmounts,
+      totalAmount: totalAmounts,
       customerCode: paymentData?.customerCode,
       userID: user?._id, // Convert to ObjectId
-      orders: lists?.map((item) => item._id),
+      orders: lists?.map((item) => new Types.ObjectId(item._id)),
       lists: lists?.map((item) => ({ amount: item.amount, title: item.title })),
     });
     await listData?.save();
-
+    console.log(listData);
     await orderModel.updateOne(
       { _id: req.params.id },
       {

@@ -6,6 +6,10 @@ import { streamUpload } from "../utils/stream";
 import { role } from "../utils/role";
 import axios from "axios";
 import env from "dotenv";
+// import userMode from "../model/userMode";
+import { Types } from "mongoose";
+import orderModel from "../model/orderModel";
+import listModel from "../model/listModel";
 env.config();
 
 // ...
@@ -95,7 +99,9 @@ export const signInUser = async (req: Request, res: Response) => {
 
 export const getAllUser = async (req: Request, res: Response) => {
   try {
-    const user = await userModel.find();
+    const user = await userModel.find({}, null, {
+      sort: { createdAt: "descending" },
+    });
 
     return res.status(HTTP.OK).json({
       message: "all user gotten",
@@ -593,6 +599,167 @@ export const registerBuyer = async (req: Request, res: Response) => {
   } catch (error) {
     return res.status(HTTP.OK).json({
       message: `error creating user ${error}`,
+    });
+  }
+};
+
+// export const searchDataBase = async (req: Request, res: Response) => {
+//   try {
+//     const { name, email, role } = req.query;
+
+//     const filter: any = {};
+
+//     if (name) {
+//       filter.name = new RegExp(name, "i");
+//     }
+
+//     if (email) {
+//       filter.email = new RegExp(email, "i");
+//     }
+
+//     if (role) {
+//       filter.role = role;
+//     }
+
+//     const users = await userModel.find(filter);
+
+//     return res.status(200).json({
+//       message: "Search results",
+//       data: users,
+//     });
+//   } catch (error: any) {
+//     // Handle error
+//   }
+// };
+
+export const searchDataBase = async (req: Request, res: Response) => {
+  try {
+    const { email, userID, name, role } = req.query;
+
+    // Input validation and sanitization
+    const filteredEmail = typeof email === "string" ? email.trim() : null;
+    const filteredUserID = typeof userID === "string" ? userID.trim() : null;
+    const filteredName = typeof name === "string" ? name.trim() : null;
+    const filteredRole = typeof role === "string" ? role.trim() : null;
+
+    const filter: any = {};
+
+    if (filteredEmail) {
+      filter.email = new RegExp(filteredEmail, "i");
+    }
+
+    if (filteredUserID) {
+      filter._id = new Types.ObjectId(filteredUserID);
+    }
+
+    if (filteredName) {
+      filter.name = new RegExp(filteredName, "i");
+    }
+
+    if (filteredRole) {
+      filter.role = new RegExp(filteredRole, "i");
+    }
+
+    // MongoDB query
+    const users = await userModel.find(filter);
+
+    return res.status(200).json({
+      message: "Search results",
+      data: users,
+    });
+  } catch (error: any) {
+    console.error(error);
+    return res.status(500).json({
+      message: "Error searching database",
+      error: error.message,
+    });
+  }
+};
+export const searchOrder = async (req: Request, res: Response) => {
+  try {
+    const { date, orderID, title, productOwner } = req.query;
+
+    // Input validation and sanitization
+    const filteredDate = typeof date === "string" ? date.trim() : null;
+    const filteredOrderID = typeof orderID === "string" ? orderID.trim() : null;
+    const filteredTitle = typeof title === "string" ? title.trim() : null;
+    const filteredProductOwner =
+      typeof productOwner === "string" ? productOwner.trim() : null;
+
+    const filter: any = {};
+
+    if (filteredDate) {
+      filter.date = new RegExp(filteredDate, "i");
+    }
+
+    if (filteredOrderID) {
+      filter._id = new Types.ObjectId(filteredOrderID);
+    }
+
+    if (filteredTitle) {
+      filter.title = new RegExp(filteredTitle, "i");
+    }
+
+    if (filteredProductOwner) {
+      filter.productOwner = new RegExp(filteredProductOwner, "i");
+    }
+
+    // MongoDB query
+    const orders = await orderModel.find(filter);
+
+    return res.status(200).json({
+      message: "Search results",
+      data: orders,
+    });
+  } catch (error: any) {
+    console.error(error);
+    return res.status(500).json({
+      message: "Error searching database",
+      error: error.message,
+    });
+  }
+};
+
+export const searchListOrder = async (req: Request, res: Response) => {
+  try {
+    const { date, listID, userID, email } = req.query;
+
+    // Input validation and sanitization
+    const filteredDate = typeof date === "string" ? date.trim() : null;
+    const filteredListID = typeof listID === "string" ? listID.trim() : null;
+    const filteredUserID = typeof userID === "string" ? userID.trim() : null;
+    const filteredEmail = typeof email === "string" ? email.trim() : null;
+
+    const filter: any = {};
+
+    if (filteredDate) {
+      filter.createdAt = new RegExp(filteredDate, "i");
+    }
+
+    if (filteredListID) {
+      filter._id = new Types.ObjectId(filteredListID);
+    }
+
+    if (filteredUserID) {
+      filter.userID = new Types.ObjectId(filteredUserID);
+    }
+
+    if (filteredEmail) {
+      filter.email = new RegExp(filteredEmail, "i");
+    }
+
+    // MongoDB query
+    const orders = await listModel.find(filter);
+
+    return res.status(200).json({
+      message: "Search results",
+      data: orders,
+    });
+  } catch (error: any) {
+    console.error(error);
+    return res.status(500).json({
+      message: "Error searching database",
+      error: error.message,
     });
   }
 };

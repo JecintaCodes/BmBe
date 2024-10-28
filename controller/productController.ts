@@ -48,7 +48,9 @@ export const createProduct = async (req: Request, res: Response) => {
 
 export const readProduct = async (req: Request, res: Response) => {
   try {
-    const product = await productModel.find();
+    const product = await productModel.find({}, null, {
+      sort: { createdAt: "descending" },
+    });
     return res.status(HTTP.OK).json({
       message: "reading all the products",
       data: product,
@@ -328,7 +330,9 @@ export const viewLists = async (req: Request, res: Response) => {
 };
 export const viewAllLists = async (req: Request, res: Response) => {
   try {
-    const list = await listModel.find();
+    const list = await listModel.find({}, null, {
+      sort: { createdAt: "descending" },
+    });
 
     return res.status(HTTP.OK).json({
       message: "all user gotten list",
