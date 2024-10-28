@@ -101,8 +101,10 @@ const orderModel = new Schema(
     ],
     lists: [
       {
-        type: Types.ObjectId,
-        ref: "lists",
+        productID: { type: Schema.Types.ObjectId, ref: "Product" },
+
+        title: { type: String },
+        amount: { type: Number },
       },
     ],
   },
