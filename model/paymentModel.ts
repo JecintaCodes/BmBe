@@ -12,7 +12,7 @@ interface iPayment {
   address: string;
   users: {}[];
   products: {}[];
-  orders: {}[];
+  orders: [];
   splitPayments: [{}];
 }
 

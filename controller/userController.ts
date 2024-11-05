@@ -10,6 +10,7 @@ import env from "dotenv";
 import { Types } from "mongoose";
 import orderModel from "../model/orderModel";
 import listModel from "../model/listModel";
+import { sendEmail } from "../utils/email";
 env.config();
 
 // ...
@@ -237,18 +238,6 @@ export const registerAdmin = async (req: Request, res: Response) => {
   try {
     const { name, email, telNumb, password, secretCode, status, address } =
       req.body;
-    // const catchData = await (await client)
-    //   .get(`${name}`)
-    //   .then(async (res: any) => {
-    //     return JSON.parse(res);
-    //   });
-    // const catchResult = await catchData;
-    // if (catchResult) {
-    //   user = catchResult;
-    // } else {
-
-    // Input validation
-    // Input validation
     if (!name || !email || !telNumb || !password || !secretCode || !address) {
       return res.status(HTTP.BAD_REQUEST).json({
         message: "Missing required fields",
@@ -273,10 +262,8 @@ export const registerAdmin = async (req: Request, res: Response) => {
         role: "ADMIN",
         verify: true,
       });
-      // (await client).set(`${name}`, JSON.stringify(user), {
-      //   EX: 3600,
-      //   NX: true,
-      // });
+      // await sendEmail(user);
+      // console.log(user, "mail sent");
       return res.status(HTTP.CREATED).json({
         message: "user created",
         data: user,

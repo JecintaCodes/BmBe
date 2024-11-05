@@ -1,29 +1,30 @@
-import { model, Schema, Types, Document } from "mongoose";
-interface iUser {
-  name: string;
-  email: string;
-  role: string;
-  image?: string;
-  imageID?: string;
-  password: string;
-  secretCode: string;
-  bankName: string;
-  bankCode?: string;
-  subAccountCode: string;
-  address: string;
-  accountNumb: string;
-  description?: string;
-  telNumb?: string;
-  products: {}[];
-  myStore: [];
-  order: {}[];
-  verify: boolean;
-  verifyToken: string;
-  lists: {}[];
-  payments: {}[];
-}
+import { model, Schema, Types } from "mongoose";
+import { iUserData } from "../interface";
+// interface iUser {
+//   name: string;
+//   email: string;
+//   role: string;
+//   image?: string;
+//   imageID?: string;
+//   password: string;
+//   secretCode: string;
+//   bankName: string;
+//   bankCode?: string;
+//   subAccountCode: string;
+//   address: string;
+//   accountNumb: string;
+//   description?: string;
+//   telNumb?: string;
+//   products: {}[];
+//   myStore: [];
+//   order: {}[];
+//   verify: boolean;
+//   verifyToken: string;
+//   lists: {}[];
+//   payments: {}[];
+// }
 
-interface iUserData extends iUser, Document {}
+// interface iUserData extends iUser, Document {}
 
 const userModel = new Schema<iUserData>(
   {

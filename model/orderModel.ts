@@ -1,5 +1,4 @@
 import { Document, model, Schema, Types } from "mongoose";
-
 interface iOrder {
   title: string;
   customerCode?: string;
@@ -11,12 +10,13 @@ interface iOrder {
   QTYOrder: number;
   address: string;
   status: string;
+  email: string;
   userID: string;
   phoneNumb: string;
   date: Date;
   category: string;
   users: {};
-  payments: {}[];
+  payments: [];
   lists: {}[];
   splitPayments: [{}];
   productDetails: [{}];
@@ -45,6 +45,9 @@ const orderModel = new Schema(
       type: String,
     },
     description: {
+      type: String,
+    },
+    email: {
       type: String,
     },
 

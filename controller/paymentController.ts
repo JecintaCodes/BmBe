@@ -936,7 +936,7 @@ export const verifyOrderListPayment = async (req: Request, res: Response) => {
         email: user?.email,
         amount: result.amount / 100,
         status: result.status,
-        user: user._id,
+        userID: user._id,
         address: user?.address,
         phoneNumb: user?.telNumb,
         customerCode: orderCode,
@@ -945,40 +945,59 @@ export const verifyOrderListPayment = async (req: Request, res: Response) => {
     }
 
     // Create orders for each item
-    // Check for duplicate order
-    const checkDuplicateOrder = await orderModel.findOne({ customerCode });
-    if (checkDuplicateOrder) {
-      // Update existing order
-      checkDuplicateOrder.lists = lists;
-      checkDuplicateOrder.totalAmount = result.amount / 100;
-      await checkDuplicateOrder.save();
-    } else {
-      // Generate unique order code
-      let orderCode;
-      do {
-        orderCode = Math.floor(100000 + Math.random() * 900000).toString();
-      } while (await orderModel.findOne({ orderCode }));
+    // Copy code
 
+    // Before creating a new order
+    console.log("Checking for existing order with customerCode:", customerCode);
+
+    // Check for existing order
+    const existingOrder = await orderModel.findOne({
+      customerCode,
+      userID: user._id,
+    });
+
+    if (existingOrder) {
+      // Update the existing order
+      existingOrder.lists.push(...lists); // Add new lists to the existing order
+
+      // Update the total amount
+      existingOrder.totalAmount += paymentData.amount; // Increment total amount
+      existingOrder.status = paymentData.status; // Update status
+
+      // Ensure payments is an array before pushing
+      // if (!existingOrder.payments.includes(paymentData?._id)) {
+      //   existingOrder.payments.push(paymentData?._id); // Add reference to the payment
+      // }
+
+      await existingOrder.save();
+
+      // Return response
+      return res
+        .status(200)
+        .json({ message: "Order updated successfully", order: existingOrder });
+    } else {
       // Create new order
       const orderData = new orderModel({
-        title: "Customer Order", // Add this line
-        customerCode: orderCode,
-        user: user?._id,
-        totalAmount: result.amount / 100,
-        lists: lists,
-        payment: paymentData._id,
-        productOwner: user?.name,
-        status: result.status,
-        address: result.address,
-        phoneNumb: result.phoneNumb,
+        title: "Customer Order",
+        email: paymentData?.email,
+        customerCode: paymentData.customerCode,
+        userID: paymentData?.userID, // Ensure userID is set
+        totalAmount: paymentData?.amount, // Use the total amount from payment
+        lists: lists, // Use the lists directly
+        payments: [paymentData._id], // Initialize payments as an array with the payment ID
+        productOwner: user.name, // Ensure you use the user's name
+        status: paymentData?.status,
+        address: paymentData?.address,
+        phoneNumb: paymentData?.phoneNumb,
       });
+
       await orderData.save();
 
-      // Update user document with order ID
+      // Update user document with the order ID
       await userMode.findByIdAndUpdate(user._id, {
         $addToSet: {
-          orders: orderData._id,
-          payments: paymentData._id,
+          order: orderData._id, // Add the new order ID to the user's orders
+          payments: paymentData._id, // Add the payment ID to the user's payments
         },
       });
     }
@@ -995,8 +1014,8 @@ export const verifyOrderListPayment = async (req: Request, res: Response) => {
         email: user.email,
         amount: totalAmounts,
         totalAmount: totalAmounts,
-        customerCode: orderCode,
-        userID: user?._id,
+        customerCode: paymentData?.customerCode,
+        userID: paymentData?.userID,
         orders: lists?.map((item) => new Types.ObjectId(item._id)),
         lists: lists?.map((item) => ({
           amount: item.amount,
@@ -1011,8 +1030,8 @@ export const verifyOrderListPayment = async (req: Request, res: Response) => {
         email: user.email,
         amount: totalAmounts,
         totalAmount: totalAmounts,
-        customerCode: orderCode,
-        userID: user?._id,
+        customerCode: paymentData?.customerCode,
+        userID: paymentData?.userID,
         orders: lists?.map((item) => new Types.ObjectId(item._id)),
         lists: lists?.map((item) => ({
           amount: item.amount,

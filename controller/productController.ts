@@ -245,32 +245,70 @@ export const viewProductUser = async (req: Request, res: Response) => {
     });
   }
 };
+// export const viewOrders = async (req: Request, res: Response) => {
+//   try {
+//     const { userID } = req.params;
+
+//     const orders = await userModel.findById(userID).populate({
+//       path: "orders",
+//       options: {
+//         sort: {
+//           createdAt: "descending",
+//         },
+//       },
+//     });
+
+//     if (orders) {
+//       return res.status(HTTP.OK).json({
+//         message: "Orders retrieved",
+//         data: orders,
+//       });
+//     } else {
+//       return res.status(HTTP.BAD_REQUEST).json({
+//         message: `User not found or no orders`,
+//       });
+//     }
+//   } catch (error) {
+//     return res.status(HTTP.BAD_REQUEST).json({
+//       message: `Error retrieving orders: ${error}`,
+//     });
+//   }
+// };
 export const viewOrders = async (req: Request, res: Response) => {
   try {
     const { userID } = req.params;
 
-    const orders = await userModel.findById(userID).populate({
-      path: "orders",
+    // Find user and populate their orders
+    const userWithOrders = await userModel.findById(userID).populate({
+      path: "order",
       options: {
-        sort: {
-          createdAt: -1,
-        },
+        sort: { createdAt: -1 }, // Sort orders by creation date in descending order
       },
     });
 
-    if (orders) {
-      return res.status(HTTP.OK).json({
-        message: "Orders retrieved",
-        data: orders,
-      });
-    } else {
+    // Check if the user exists
+    if (!userWithOrders) {
       return res.status(HTTP.BAD_REQUEST).json({
-        message: `User not found or no orders`,
+        message: "User not found",
       });
     }
-  } catch (error) {
+
+    // Check if the user has any orders
+    if (userWithOrders.order.length > 0) {
+      return res.status(HTTP.OK).json({
+        message: "Orders retrieved",
+        data: userWithOrders, // Return the orders
+      });
+    } else {
+      return res.status(HTTP.OK).json({
+        // Changed to OK status
+        message: "User has no orders",
+      });
+    }
+  } catch (error: any) {
+    console.error(error); // Log the error for debugging
     return res.status(HTTP.BAD_REQUEST).json({
-      message: `Error retrieving orders: ${error}`,
+      message: `Error retrieving orders: ${error.message || error}`,
     });
   }
 };
