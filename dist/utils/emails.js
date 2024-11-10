@@ -27,6 +27,9 @@ const sendMails = (user, verificationToken) => __awaiter(void 0, void 0, void 0,
             pass: yourAppPassword,
         },
     });
+    const verificationLink = process.env.NODE_ENV === "production"
+        ? `https://boundarymarket.onrender.com/api/v1/verify/${verificationToken}`
+        : `http://localhost:2003/api/v1/verify/${verificationToken}`;
     const mailOptions = {
         from: `Boundary-Market <${yourEmail}>`,
         to: user.email,
@@ -34,9 +37,8 @@ const sendMails = (user, verificationToken) => __awaiter(void 0, void 0, void 0,
         text: `Hello, ${user.name}. Verify your email`,
         html: emailTemplate_1.VERIFICATIONEMAILtEMPLATE.replace("{verifyToken}", verificationToken)
             .replace("{name}", user === null || user === void 0 ? void 0 : user.name)
-            .replace("{verificationLink}", 
-        // `http://localhost:2003/api/v1/verify/${verificationToken}`
-        `https://boundarymarket.onrender.com/api/v1/verify/${verificationToken}`),
+            .replace("{verificationLink}", verificationLink), // Use verificationLink here
+        // };
     };
     try {
         yield transporter.sendMail(mailOptions);
