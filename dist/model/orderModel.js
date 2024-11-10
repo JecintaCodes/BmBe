@@ -1,6 +1,10 @@
 "use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 const mongoose_1 = require("mongoose");
+const moment_1 = __importDefault(require("moment"));
 const orderModel = new mongoose_1.Schema({
     title: {
         type: String,
@@ -21,6 +25,9 @@ const orderModel = new mongoose_1.Schema({
     description: {
         type: String,
     },
+    email: {
+        type: String,
+    },
     totalAmount: {
         type: Number,
     },
@@ -29,7 +36,16 @@ const orderModel = new mongoose_1.Schema({
     },
     date: {
         type: Date,
-        default: Date.now, // Added default date
+        default: Date.now,
+        get: (value) => {
+            return (0, moment_1.default)(value).format("YYYY-MM-DD");
+        },
+    },
+    time: {
+        type: String,
+        default: () => {
+            return (0, moment_1.default)().format("HH:mm:ss");
+        },
     },
     customerCode: {
         type: String,
@@ -72,8 +88,9 @@ const orderModel = new mongoose_1.Schema({
     ],
     lists: [
         {
-            type: mongoose_1.Types.ObjectId,
-            ref: "lists",
+            productID: { type: mongoose_1.Schema.Types.ObjectId, ref: "Product" },
+            title: { type: String },
+            amount: { type: Number },
         },
     ],
 }, { timestamps: true });

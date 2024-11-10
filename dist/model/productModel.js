@@ -26,6 +26,7 @@ const productModel = new mongoose_1.Schema({
     },
     amount: {
         type: Number,
+        require: true,
     },
     toggle: {
         type: Boolean,

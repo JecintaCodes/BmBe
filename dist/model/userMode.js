@@ -1,6 +1,31 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const mongoose_1 = require("mongoose");
+// interface iUser {
+//   name: string;
+//   email: string;
+//   role: string;
+//   image?: string;
+//   imageID?: string;
+//   password: string;
+//   secretCode: string;
+//   bankName: string;
+//   bankCode?: string;
+//   subAccountCode: string;
+//   address: string;
+//   accountNumb: string;
+//   description?: string;
+//   telNumb?: string;
+//   products: {}[];
+//   myStore: [];
+//   order: {}[];
+//   verify: boolean;
+//   verifyToken: string;
+//   verifyTokenExp: string;
+//   lists: {}[];
+//   payments: {}[];
+// }
+// interface iUserData extends iUser, Document {}
 const userModel = new mongoose_1.Schema({
     address: {
         type: String,
@@ -28,6 +53,9 @@ const userModel = new mongoose_1.Schema({
         type: String,
     },
     subAccountCode: {
+        type: String,
+    },
+    verifyTokenExp: {
         type: String,
     },
     accountNumb: {

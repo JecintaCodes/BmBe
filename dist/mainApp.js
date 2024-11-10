@@ -48,12 +48,19 @@ const mainApp = (app) => {
     //     // credentials: true,
     //   })
     // );
-    app.use((0, cors_1.default)({
-        origin: ["http://localhost:5173"], // Allow specific origin
-        methods: ["GET", "POST", "PUT", "DELETE"],
-        allowedHeaders: ["Content-Type", "Authorization"],
-        credentials: true,
-    }));
+    app.use((err, req, res, next) => {
+        console.error(err);
+        res.status(500).json({ message: "Internal Server Error" });
+    });
+    // app.use(
+    //   cors({
+    //     origin: ["http://localhost:5173/"], // Allow specific origin
+    //     methods: ["GET", "POST", "PUT", "DELETE"],
+    //     allowedHeaders: ["Content-Type", "Authorization"],
+    //     credentials: true,
+    //   })
+    // );
+    app.use((0, cors_1.default)());
     app.use(express_1.default.json());
     app.use((0, morgan_1.default)("dev"));
     app.use((0, helmet_1.default)());

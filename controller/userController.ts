@@ -275,7 +275,7 @@ export const registerAdmin = async (req: Request, res: Response) => {
         password: harsh,
         secretCode: secret,
         role: "ADMIN",
-        // verify: true,
+
         verifyToken,
         verifyTokenExp: Date.now() + 24 * 60 * 60 * 1000,
       });

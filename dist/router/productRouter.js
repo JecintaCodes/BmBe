@@ -54,7 +54,7 @@ productRouter.route("/:userID/view-orders").get(productController_1.viewOrders);
 productRouter.route("/:userID/:productID/delete-product").delete(productController_1.deleteProduct);
 productRouter.route("/:userID/create-list").post(productController_1.createProductList);
 productRouter.route("/:listID/delete-list").delete(productController_1.deleteProductList);
-// productRouter.route("/:userID/get-list").get(getLists);
+productRouter.route("/search").get(productController_1.searchProducts);
 // import express, { Router } from "express";import OrderController from "../controllers/OrderController";
 // const router: Router = express.Router();
 const orderController = new productController_1.default();

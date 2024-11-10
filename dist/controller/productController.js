@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.createProductList = exports.deleteProductList = exports.viewAllLists = exports.viewLists = exports.deleteProduct = exports.viewOrders = exports.viewProductUser = exports.viewUserProduct = exports.purchaseProduct = exports.updateProducts = exports.readOneProduct = exports.readOrders = exports.readProduct = exports.createProduct = void 0;
+exports.searchProducts = exports.createProductList = exports.deleteProductList = exports.viewAllLists = exports.viewLists = exports.deleteProduct = exports.viewOrders = exports.viewProductUser = exports.viewUserProduct = exports.purchaseProduct = exports.updateProducts = exports.readOneProduct = exports.readOrders = exports.readProduct = exports.createProduct = void 0;
 const userMode_1 = __importDefault(require("../model/userMode"));
 const productModel_1 = __importDefault(require("../model/productModel"));
 const stream_1 = require("../utils/stream");
@@ -60,7 +60,9 @@ const createProduct = (req, res) => __awaiter(void 0, void 0, void 0, function* 
 exports.createProduct = createProduct;
 const readProduct = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const product = yield productModel_1.default.find();
+        const product = yield productModel_1.default.find({}, null, {
+            sort: { createdAt: "descending" },
+        });
         return res.status(mainError_1.HTTP.OK).json({
             message: "reading all the products",
             data: product,
@@ -245,32 +247,67 @@ const viewProductUser = (req, res) => __awaiter(void 0, void 0, void 0, function
     }
 });
 exports.viewProductUser = viewProductUser;
+// export const viewOrders = async (req: Request, res: Response) => {
+//   try {
+//     const { userID } = req.params;
+//     const orders = await userModel.findById(userID).populate({
+//       path: "orders",
+//       options: {
+//         sort: {
+//           createdAt: "descending",
+//         },
+//       },
+//     });
+//     if (orders) {
+//       return res.status(HTTP.OK).json({
+//         message: "Orders retrieved",
+//         data: orders,
+//       });
+//     } else {
+//       return res.status(HTTP.BAD_REQUEST).json({
+//         message: `User not found or no orders`,
+//       });
+//     }
+//   } catch (error) {
+//     return res.status(HTTP.BAD_REQUEST).json({
+//       message: `Error retrieving orders: ${error}`,
+//     });
+//   }
+// };
 const viewOrders = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { userID } = req.params;
-        const orders = yield userMode_1.default.findById(userID).populate({
-            path: "orders",
+        // Find user and populate their orders
+        const userWithOrders = yield userMode_1.default.findById(userID).populate({
+            path: "order",
             options: {
-                sort: {
-                    createdAt: -1,
-                },
+                sort: { createdAt: -1 }, // Sort orders by creation date in descending order
             },
         });
-        if (orders) {
+        // Check if the user exists
+        if (!userWithOrders) {
+            return res.status(mainError_1.HTTP.BAD_REQUEST).json({
+                message: "User not found",
+            });
+        }
+        // Check if the user has any orders
+        if (userWithOrders.order.length > 0) {
             return res.status(mainError_1.HTTP.OK).json({
                 message: "Orders retrieved",
-                data: orders,
+                data: userWithOrders, // Return the orders
             });
         }
         else {
-            return res.status(mainError_1.HTTP.BAD_REQUEST).json({
-                message: `User not found or no orders`,
+            return res.status(mainError_1.HTTP.OK).json({
+                // Changed to OK status
+                message: "User has no orders",
             });
         }
     }
     catch (error) {
+        console.error(error); // Log the error for debugging
         return res.status(mainError_1.HTTP.BAD_REQUEST).json({
-            message: `Error retrieving orders: ${error}`,
+            message: `Error retrieving orders: ${error.message || error}`,
         });
     }
 });
@@ -330,7 +367,9 @@ const viewLists = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
 exports.viewLists = viewLists;
 const viewAllLists = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const list = yield listModel_1.default.find();
+        const list = yield listModel_1.default.find({}, null, {
+            sort: { createdAt: "descending" },
+        });
         return res.status(mainError_1.HTTP.OK).json({
             message: "all user gotten list",
             data: list,
@@ -852,3 +891,40 @@ class OrderController {
     }
 }
 exports.default = OrderController;
+// export const searchProducts = async (req: Request, res: Response) => {
+//   try {
+//     const { title } = req.body;
+//     const product = await productModel.find({ title });
+//     return res.status(HTTP.OK).json({
+//       message: `gotten product`,
+//       data: product,
+//     });
+//   } catch (error: any) {
+//     return res.status(HTTP.BAD_REQUEST).json({
+//       message: `error seaching message ${error?.message}`,
+//     });
+//   }
+// };
+const searchProducts = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { title } = req.query;
+        const product = yield productModel_1.default.find({
+            title: { $regex: `^${title}`, $options: "i" }, // Partial matching from start
+        });
+        if (!product.length) {
+            return res.status(mainError_1.HTTP.BAD_REQUEST).json({
+                message: `No products found with title ${title}`,
+            });
+        }
+        return res.status(mainError_1.HTTP.OK).json({
+            message: `Products found`,
+            data: product,
+        });
+    }
+    catch (error) {
+        return res.status(mainError_1.HTTP.BAD_REQUEST).json({
+            message: `Error searching products: ${error === null || error === void 0 ? void 0 : error.message}`,
+        });
+    }
+});
+exports.searchProducts = searchProducts;
