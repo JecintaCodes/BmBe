@@ -425,7 +425,8 @@ const verifyEmail = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
         user.verifyToken = "";
         yield user.save();
         // Optionally, send a success message or redirect
-        return res.redirect("http://localhost:5173/sign-in"); // or a success page
+        return res.redirect("https://boundary-market1.web.app/sign-in"); // or a success page
+        // return res.redirect("http://localhost:5173/sign-in"); // or a success page
     }
     catch (err) {
         console.error("Error during email verification:", err);
@@ -434,18 +435,42 @@ const verifyEmail = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
 });
 exports.verifyEmail = verifyEmail;
 // Generate and send verification code
+// export const sendVerificationCode = async (req: Request, res: Response) => {
+//   try {
+//     const { email } = req.body;
+//     if (!email) {
+//       return res.status(400).json({ message: "Email is required" });
+//     }
+//     const verifyToken = Math.floor(100000 + Math.random() * 900000).toString();
+//     const updatedUser = await userModel.findOneAndUpdate(
+//       { email },
+//       { verifyToken },
+//       { new: true, upsert: true }
+//     );
+//     if (!updatedUser) {
+//       throw new Error("User not found");
+//     }
+//     await sendVerificationEmail(updatedUser, verifyToken);
+//     res.json({ message: "Verification code sent successfully" });
+//   } catch (error) {
+//     console.error(error);
+//     res.status(500).json({ message: "Error sending verification email" });
+//   }
+// };
 const sendVerificationCode = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { email } = req.body;
         if (!email) {
             return res.status(400).json({ message: "Email is required" });
         }
-        const verifyToken = Math.floor(100000 + Math.random() * 900000).toString();
-        const updatedUser = yield userMode_1.default.findOneAndUpdate({ email }, { verifyToken }, { new: true, upsert: true });
-        if (!updatedUser) {
-            throw new Error("User not found");
+        const existingUser = yield userMode_1.default.findOne({ email });
+        if (!existingUser) {
+            return res.status(404).json({ message: "User not found" });
         }
-        yield (0, email_1.sendVerificationEmail)(updatedUser, verifyToken);
+        const verifyToken = Math.floor(100000 + Math.random() * 900000).toString();
+        yield userMode_1.default.findOneAndUpdate({ email }, { verifyToken, verifyTokenExp: Date.now() + 3600000 }, // 1 hour expiration
+        { new: true });
+        yield (0, email_1.sendVerificationEmail)(existingUser, verifyToken);
         res.json({ message: "Verification code sent successfully" });
     }
     catch (error) {

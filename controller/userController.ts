@@ -452,7 +452,8 @@ export const verifyEmail = async (req: Request, res: Response) => {
     await user.save();
 
     // Optionally, send a success message or redirect
-    return res.redirect("http://localhost:5173/sign-in"); // or a success page
+    return res.redirect("https://boundary-market1.web.app/sign-in"); // or a success page
+    // return res.redirect("http://localhost:5173/sign-in"); // or a success page
   } catch (err) {
     console.error("Error during email verification:", err);
     return res.status(500).json({ message: "Internal server error" });
@@ -460,6 +461,34 @@ export const verifyEmail = async (req: Request, res: Response) => {
 };
 // Generate and send verification code
 
+// export const sendVerificationCode = async (req: Request, res: Response) => {
+//   try {
+//     const { email } = req.body;
+
+//     if (!email) {
+//       return res.status(400).json({ message: "Email is required" });
+//     }
+
+//     const verifyToken = Math.floor(100000 + Math.random() * 900000).toString();
+
+//     const updatedUser = await userModel.findOneAndUpdate(
+//       { email },
+//       { verifyToken },
+//       { new: true, upsert: true }
+//     );
+
+//     if (!updatedUser) {
+//       throw new Error("User not found");
+//     }
+
+//     await sendVerificationEmail(updatedUser, verifyToken);
+
+//     res.json({ message: "Verification code sent successfully" });
+//   } catch (error) {
+//     console.error(error);
+//     res.status(500).json({ message: "Error sending verification email" });
+//   }
+// };
 export const sendVerificationCode = async (req: Request, res: Response) => {
   try {
     const { email } = req.body;
@@ -468,19 +497,21 @@ export const sendVerificationCode = async (req: Request, res: Response) => {
       return res.status(400).json({ message: "Email is required" });
     }
 
-    const verifyToken = Math.floor(100000 + Math.random() * 900000).toString();
+    const existingUser = await userModel.findOne({ email });
 
-    const updatedUser = await userModel.findOneAndUpdate(
-      { email },
-      { verifyToken },
-      { new: true, upsert: true }
-    );
-
-    if (!updatedUser) {
-      throw new Error("User not found");
+    if (!existingUser) {
+      return res.status(404).json({ message: "User not found" });
     }
 
-    await sendVerificationEmail(updatedUser, verifyToken);
+    const verifyToken = Math.floor(100000 + Math.random() * 900000).toString();
+
+    await userModel.findOneAndUpdate(
+      { email },
+      { verifyToken, verifyTokenExp: Date.now() + 3600000 }, // 1 hour expiration
+      { new: true }
+    );
+
+    await sendVerificationEmail(existingUser, verifyToken);
 
     res.json({ message: "Verification code sent successfully" });
   } catch (error) {
