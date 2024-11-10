@@ -5,16 +5,16 @@
 // import { VERIFICATIONEMAILtEMPLATE } from "../mailtrap/emailTemplate";
 
 // const GOOGLE_CLIENT =
-//   "379495850623-su2v5nqab8bsc39bne2054dt17gqj8sf.apps.googleusercontent.com";
-// const GOOGLE_SECRET_KEY = "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";
+//   ";
+// const GOOGLE_SECRET_KEY = "";
 // const GOOGLE_REFRESH_TOKEN =
-//   "1//04HwDWmHDkKCKCgYIARAAGAQSNwF-L9Ira7W_lyc7H_ewa8hj3d11-RsjyeFFuRRkStbxW5BAlxNhjeXiLBY6x50j80QvRnnKJL0";
+//   "";
 
 // // const GOOGLE_REFRESH_TOKEN =
-// //   "1//04IFsTNSRYpifCgYIARAAGAQSNwF-L9IrQtk-MlkfLoRPTLeP5FSOQzJrACcEX_eb1cJvCzxgPB2RN2lDMrOit74TF1YMMp4PVjs";
+// //   "";
 // // const GOOGLE_CLIENT =
-// //   "76597312158-nvjq3tqe0489m3upu0flchdbu9tom9nt.apps.googleusercontent.com";
-// // const GOOGLE_SECRET_KEY = "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";
+// //   "";
+// // const GOOGLE_SECRET_KEY = "";
 // const GOOGLE_URL = "https://developers.google.com/oauthplayground";
 // const USER_MAIL = "onyemaobijecintaugochi@gmail.com";
 // const LIVE_URL = `http://localhost:5173/`;
