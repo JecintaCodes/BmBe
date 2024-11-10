@@ -6,11 +6,13 @@ import { streamUpload } from "../utils/stream";
 import { role } from "../utils/role";
 import axios from "axios";
 import env from "dotenv";
-// import userMode from "../model/userMode";
 import { Types } from "mongoose";
 import orderModel from "../model/orderModel";
 import listModel from "../model/listModel";
-import { sendEmail } from "../utils/email";
+import { sendVerificationEmail } from "../mailtrap/email";
+import { generateTokenAndSecretCode } from "../utils/generateTokenAndCreateSecret";
+import contactUsMail, { sendMails } from "../utils/emails";
+import userMode from "../model/userMode";
 env.config();
 
 // ...
@@ -233,11 +235,19 @@ export const updateUserInfo = async (req: Request, res: Response) => {
     });
   }
 };
-
 export const registerAdmin = async (req: Request, res: Response) => {
   try {
-    const { name, email, telNumb, password, secretCode, status, address } =
-      req.body;
+    const {
+      name,
+      email,
+      telNumb,
+      password,
+      secretCode,
+      status,
+      address,
+      verifyToken,
+      verifyTokenExp,
+    } = req.body;
     if (!name || !email || !telNumb || !password || !secretCode || !address) {
       return res.status(HTTP.BAD_REQUEST).json({
         message: "Missing required fields",
@@ -252,6 +262,11 @@ export const registerAdmin = async (req: Request, res: Response) => {
     if (secret === secretCode) {
       const salt = await genSalt(10);
       const harsh = await hash(password, salt);
+      // const verificationCode = generateVerificationCode();
+      const verifyToken = Math.floor(
+        100000 + Math.random() * 900000
+      ).toString();
+
       const user = await userModel.create({
         name,
         email,
@@ -260,10 +275,22 @@ export const registerAdmin = async (req: Request, res: Response) => {
         password: harsh,
         secretCode: secret,
         role: "ADMIN",
-        verify: true,
+        // verify: true,
+        verifyToken,
+        verifyTokenExp: Date.now() + 24 * 60 * 60 * 1000,
       });
-      // await sendEmail(user);
-      // console.log(user, "mail sent");
+      // await sendSmsVerification(telNumb, verifyToken);
+      //  jwt;
+
+      try {
+        generateTokenAndSecretCode(res, user?._id as string);
+      } catch (error) {
+        console.error("Error generating token:", error);
+        res.status(500).send("Error generating token");
+      }
+      await sendMails(user, verifyToken);
+      console.log("mail sent");
+
       return res.status(HTTP.CREATED).json({
         message: "user created",
         data: user,
@@ -332,6 +359,135 @@ export const registerAdmin = async (req: Request, res: Response) => {
 //   }
 // };
 
+// export const verify = async (req: Request, res: Response) => {
+//   try {
+//     const { verifyToken, email } = req.body;
+
+//     if (!verifyToken || !email) {
+//       return res.status(HTTP.BAD_REQUEST).json("invalid input");
+//     }
+//     const user = userModel.findOne({ email, verifyToken });
+
+//      if (!user) {
+//        return res.status(404).send({ message: "User not found" });
+//      }
+
+//      // Verify user's email
+//     user!.verify = true;
+//     user!.verifyToken = null;
+//     await user.save();
+
+//     return res.send({ message: 'Email verified successfully' });
+
+//   } catch (error: any) {
+//     return res.status(404).json({
+//       message: `error verifing user:${error}`,
+//     });
+//   }
+// };
+export const verifyUserAccount = async (req: Request, res: Response) => {
+  try {
+    const { userID } = req.params;
+    const { verifyToken } = req.body;
+
+    if (!userID || !verifyToken) {
+      return res.status(400).json({ message: "Invalid request" });
+    }
+
+    const accountUser = await userModel.findById(userID);
+
+    if (accountUser?.verifyToken === verifyToken) {
+      const user = await userModel.findByIdAndUpdate(
+        userID,
+        {
+          verifyToken: "",
+          verify: true,
+        },
+        { new: true }
+      );
+
+      return res
+        .status(201)
+        .json({ message: "user account verified successfully", data: user });
+    } else {
+      return res.status(404).json({ message: "Invalid token" });
+    }
+  } catch (error: any) {
+    return res.status(404).json({ message: error.message });
+  }
+};
+
+// export const verifyEmail = async (req: Request, res: Response) => {
+//   const { verificationToken } = req.params;
+//   console.log("Received verification token:", verificationToken);
+
+//   // Find the user based on the token
+//   const user = await userModel.findOne({ verifyToken: verificationToken });
+//   console.log("User found:", user);
+
+//   if (!user) {
+//     return res.status(404).json({ message: "Invalid verification token" });
+//   }
+
+//   // Continue with your verification logic...
+// };
+
+export const verifyEmail = async (req: Request, res: Response) => {
+  try {
+    const { verificationToken } = req.params;
+    console.log("Received verification token:", verificationToken);
+
+    // Find the user based on the token
+    const user = await userModel.findOne({ verifyToken: verificationToken });
+
+    console.log("User found:", user);
+
+    if (!user) {
+      return res.status(404).json({ message: "Invalid verification token" });
+    }
+
+    // If user found, mark as verified (you can customize this part based on your needs)
+    user.verify = true;
+    user.verifyToken = "";
+    await user.save();
+
+    // Optionally, send a success message or redirect
+    return res.redirect("http://localhost:5173/sign-in"); // or a success page
+  } catch (err) {
+    console.error("Error during email verification:", err);
+    return res.status(500).json({ message: "Internal server error" });
+  }
+};
+// Generate and send verification code
+
+export const sendVerificationCode = async (req: Request, res: Response) => {
+  try {
+    const { email } = req.body;
+
+    if (!email) {
+      return res.status(400).json({ message: "Email is required" });
+    }
+
+    const verifyToken = Math.floor(100000 + Math.random() * 900000).toString();
+
+    const updatedUser = await userModel.findOneAndUpdate(
+      { email },
+      { verifyToken },
+      { new: true, upsert: true }
+    );
+
+    if (!updatedUser) {
+      throw new Error("User not found");
+    }
+
+    await sendVerificationEmail(updatedUser, verifyToken);
+
+    res.json({ message: "Verification code sent successfully" });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Error sending verification email" });
+  }
+};
 export const registerUser = async (req: Request, res: Response) => {
   try {
     const { adminID } = req.params;
@@ -570,6 +726,7 @@ export const registerBuyer = async (req: Request, res: Response) => {
 
     const salt = await genSalt(2);
     const harsh = await hash(password, salt);
+    const verifyToken = Math.floor(100000 + Math.random() * 900000).toString();
     const buyer = await userModel.create({
       name,
       email,
@@ -577,8 +734,17 @@ export const registerBuyer = async (req: Request, res: Response) => {
       telNumb,
       password: harsh,
       role: "BUYER",
-      verify: true,
+      verifyToken,
+      verifyTokenExp: Date.now() + 24 * 60 * 60 * 1000,
     });
+    try {
+      generateTokenAndSecretCode(res, buyer?._id as string);
+    } catch (error) {
+      console.error("Error generating token:", error);
+      res.status(500).send("Error generating token");
+    }
+    await sendMails(buyer, verifyToken);
+    console.log("mail sent");
     return res.status(HTTP.CREATED).json({
       message: "user created",
       data: buyer,
@@ -748,5 +914,131 @@ export const searchListOrder = async (req: Request, res: Response) => {
       message: "Error searching database",
       error: error.message,
     });
+  }
+};
+
+// export const forgetUserPassword = async (req: Request, res: Response) => {
+//   try {
+//     const { email } = req.body;
+
+//     const verifyToken = Math.floor(100000 + Math.random() * 900000).toString();
+
+//     const getUser = await userMode.findOne({ email });
+
+//     if (getUser && getUser?.verify) {
+//       const user = await userMode.findByIdAndUpdate(
+//         getUser?._id,
+//         {
+//           verifyToken,
+//         },
+//         { new: true }
+//       );
+
+//       try {
+//         generateTokenAndSecretCode(res, getUser?._id as string);
+//       } catch (error) {
+//         console.error("Error generating token:", error);
+//         res.status(500).send("Error generating token");
+//       }
+//       await sendMails(getUser, verifyToken);
+//       console.log("mail sent");
+
+//       return res
+//         .status(201)
+//         .json({ message: "created successfully", data: user });
+//     } else {
+//       return res.status(404).json({ message: "user can't be found" });
+//     }
+//   } catch (error: any) {
+//     return res.status(404).json({ message: error.message });
+//   }
+// };
+// export const forgetUserPassword = async (req: Request, res: Response) => {
+//   try {
+//     const { email } = req.body;
+
+//     // Input validation
+//     if (!email || !email.trim()) {
+//       return res.status(400).json({ message: "Email is required" });
+//     }
+
+//     const verifyToken = Math.floor(100000 + Math.random() * 900000).toString();
+
+//     const getUser = await userMode.findOne({ email });
+
+//     if (!getUser || !getUser.verify) {
+//       return res
+//         .status(404)
+//         .json({ message: "User not found or not verified" });
+//     }
+
+//     const user = await userMode.findByIdAndUpdate(
+//       getUser._id,
+//       { verifyToken },
+//       { new: true }
+//     );
+
+//     if (!user) {
+//       throw new Error("Failed to update user");
+//     }
+
+//     try {
+//       await generateTokenAndSecretCode(res, user._id as string);
+//       await sendMails(user, verifyToken);
+//     } catch (error) {
+//       console.error("Error generating token or sending email:", error);
+//       return res.status(500).json({ message: "Internal Server Error" });
+//     }
+
+//     return res
+//       .status(201)
+//       .json({ message: "Token sent successfully", data: user });
+//   } catch (error: any) {
+//     console.error("Error:", error);
+//     return res.status(500).json({ message: "Internal Server Error" });
+//   }
+// };
+export const resetUserPassword = async (req: Request, res: Response) => {
+  try {
+    const { password } = req.body;
+    const { userID } = req.params;
+
+    const salt = await genSalt(10);
+    const hashed = await hash(password, salt);
+
+    const getUser = await userModel.findById(userID);
+
+    if (getUser && getUser?.verify && getUser?.verifyToken !== "") {
+      const user = await userModel.findByIdAndUpdate(
+        getUser?._id,
+        {
+          verifyToken: "",
+          password: hashed,
+        },
+        { new: true }
+      );
+
+      return res
+        .status(201)
+        .json({ message: "created successfully", data: user });
+    } else {
+      return res.status(404).json({ message: "user can't be found" });
+    }
+  } catch (error: any) {
+    return res.status(404).json({ message: error.message });
+  }
+};
+export const contactMail = async (req: Request, res: Response) => {
+  try {
+    const { name, email, message } = req.body;
+    const emailData = { name, email, message };
+    const response = await contactUsMail(emailData);
+    res.status(HTTP.CREATED).json({
+      message: "mail sent successfully",
+      data: response,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ success: false, error });
   }
 };

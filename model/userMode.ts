@@ -1,5 +1,5 @@
 import { model, Schema, Types } from "mongoose";
-import { iUserData } from "../interface";
+import { iUserData } from "../utils/interface";
 // interface iUser {
 //   name: string;
 //   email: string;
@@ -20,6 +20,7 @@ import { iUserData } from "../interface";
 //   order: {}[];
 //   verify: boolean;
 //   verifyToken: string;
+//   verifyTokenExp: string;
 //   lists: {}[];
 //   payments: {}[];
 // }
@@ -57,6 +58,9 @@ const userModel = new Schema<iUserData>(
       type: String,
     },
     subAccountCode: {
+      type: String,
+    },
+    verifyTokenExp: {
       type: String,
     },
     accountNumb: {

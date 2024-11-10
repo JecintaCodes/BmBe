@@ -910,11 +910,22 @@ export const verifyOrderListPayment = async (req: Request, res: Response) => {
       return res.status(400).json({ message: "Invalid payment data" });
     }
 
-    // Generate unique order code
-    let orderCode;
+    //generate customer code
+
+    let generatedCustomerCode: string;
     do {
-      orderCode = Math.floor(100000 + Math.random() * 900000).toString();
-    } while (await orderModel.findOne({ orderCode }));
+      generatedCustomerCode = Math.floor(
+        100000 + Math.random() * 900000
+      ).toString();
+    } while (await orderModel.findOne({ customerCode: generatedCustomerCode }));
+
+    // Update user document with customerCode
+    await userMode.findByIdAndUpdate(user._id, {
+      customerCode: generatedCustomerCode,
+    });
+
+    // Update user document with customerCode
+    await userMode.findByIdAndUpdate(user._id, { customerCode });
 
     // Update existing payment document or create a new one
     const existingPayment = await paymentModel.findOne({ refNumb });
@@ -927,7 +938,7 @@ export const verifyOrderListPayment = async (req: Request, res: Response) => {
         user: user._id,
         address: user?.address,
         phoneNumb: user?.telNumb,
-        customerCode: orderCode,
+        customerCode: generatedCustomerCode,
       });
       paymentData = existingPayment;
     } else {
@@ -939,20 +950,15 @@ export const verifyOrderListPayment = async (req: Request, res: Response) => {
         userID: user._id,
         address: user?.address,
         phoneNumb: user?.telNumb,
-        customerCode: orderCode,
+        customerCode: generatedCustomerCode,
       });
       await paymentData.save();
     }
 
-    // Create orders for each item
-    // Copy code
-
-    // Before creating a new order
-    console.log("Checking for existing order with customerCode:", customerCode);
-
     // Check for existing order
+    // Check if order already exists for the user and customerCode
     const existingOrder = await orderModel.findOne({
-      customerCode,
+      customerCode: paymentData?.customerCode,
       userID: user._id,
     });
 
@@ -980,7 +986,7 @@ export const verifyOrderListPayment = async (req: Request, res: Response) => {
       const orderData = new orderModel({
         title: "Customer Order",
         email: paymentData?.email,
-        customerCode: paymentData.customerCode,
+        customerCode: paymentData?.customerCode,
         userID: paymentData?.userID, // Ensure userID is set
         totalAmount: paymentData?.amount, // Use the total amount from payment
         lists: lists, // Use the lists directly

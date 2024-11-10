@@ -1,6 +1,8 @@
 import { Document, model, Schema, Types } from "mongoose";
+import moment from "moment";
 interface iOrder {
   title: string;
+  time: string;
   customerCode?: string;
   productOwner?: string;
   img: string;
@@ -60,8 +62,18 @@ const orderModel = new Schema(
 
     date: {
       type: Date,
-      default: Date.now, // Added default date
+      default: Date.now,
+      get: (value: any) => {
+        return moment(value).format("YYYY-MM-DD");
+      },
     },
+    time: {
+      type: String,
+      default: () => {
+        return moment().format("HH:mm:ss");
+      },
+    },
+
     customerCode: {
       type: String,
     },
