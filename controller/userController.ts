@@ -13,6 +13,7 @@ import { sendVerificationEmail } from "../mailtrap/email";
 import { generateTokenAndSecretCode } from "../utils/generateTokenAndCreateSecret";
 import contactUsMail, { sendMails } from "../utils/emails";
 import userMode from "../model/userMode";
+import { sendEmailsToUser } from "../utils/Mails";
 env.config();
 
 // ...
@@ -307,7 +308,7 @@ export const registerAdmin = async (req: Request, res: Response) => {
     });
   }
 };
-// export const registerAdmin = async (req: Request, res: Response) => {
+
 //   try {
 //     const { name, email, telNumb, password, secretCode, status, address } =
 //       req.body;
@@ -461,34 +462,6 @@ export const verifyEmail = async (req: Request, res: Response) => {
 };
 // Generate and send verification code
 
-// export const sendVerificationCode = async (req: Request, res: Response) => {
-//   try {
-//     const { email } = req.body;
-
-//     if (!email) {
-//       return res.status(400).json({ message: "Email is required" });
-//     }
-
-//     const verifyToken = Math.floor(100000 + Math.random() * 900000).toString();
-
-//     const updatedUser = await userModel.findOneAndUpdate(
-//       { email },
-//       { verifyToken },
-//       { new: true, upsert: true }
-//     );
-
-//     if (!updatedUser) {
-//       throw new Error("User not found");
-//     }
-
-//     await sendVerificationEmail(updatedUser, verifyToken);
-
-//     res.json({ message: "Verification code sent successfully" });
-//   } catch (error) {
-//     console.error(error);
-//     res.status(500).json({ message: "Error sending verification email" });
-//   }
-// };
 export const sendVerificationCode = async (req: Request, res: Response) => {
   try {
     const { email } = req.body;
@@ -497,21 +470,19 @@ export const sendVerificationCode = async (req: Request, res: Response) => {
       return res.status(400).json({ message: "Email is required" });
     }
 
-    const existingUser = await userModel.findOne({ email });
-
-    if (!existingUser) {
-      return res.status(404).json({ message: "User not found" });
-    }
-
     const verifyToken = Math.floor(100000 + Math.random() * 900000).toString();
 
-    await userModel.findOneAndUpdate(
+    const updatedUser = await userModel.findOneAndUpdate(
       { email },
-      { verifyToken, verifyTokenExp: Date.now() + 3600000 }, // 1 hour expiration
+      { verifyToken },
       { new: true }
     );
 
-    await sendVerificationEmail(existingUser, verifyToken);
+    if (!updatedUser) {
+      throw new Error("User not found");
+    }
+
+    await sendMails(updatedUser, verifyToken);
 
     res.json({ message: "Verification code sent successfully" });
   } catch (error) {
@@ -519,6 +490,7 @@ export const sendVerificationCode = async (req: Request, res: Response) => {
     res.status(500).json({ message: "Error sending verification email" });
   }
 };
+
 export const registerUser = async (req: Request, res: Response) => {
   try {
     const { adminID } = req.params;
@@ -775,6 +747,7 @@ export const registerBuyer = async (req: Request, res: Response) => {
       res.status(500).send("Error generating token");
     }
     await sendMails(buyer, verifyToken);
+    // await sendEmailsToUser(buyer, verifyToken);
     console.log("mail sent");
     return res.status(HTTP.CREATED).json({
       message: "user created",

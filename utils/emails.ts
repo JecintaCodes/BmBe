@@ -22,10 +22,10 @@ const sendMails = async (user: iUserData, verificationToken: string) => {
       pass: yourAppPassword,
     },
   });
-  const verificationLink =
-    process.env.NODE_ENV === "production"
-      ? `https://boundarymarket.onrender.com/api/v1/verify/${verificationToken}`
-      : `http://localhost:2003/api/v1/verify/${verificationToken}`;
+  // const verificationLink =
+  //   process.env.NODE_ENV === "production"
+  //     // ? `https://boundarymarket.onrender.com/api/v1/verify/${verificationToken}`
+  //     : `http://localhost:2003/api/v1/verify/${verificationToken}`;
 
   const mailOptions: MailOptions = {
     from: `Boundary-Market <${yourEmail}>`,
@@ -34,8 +34,11 @@ const sendMails = async (user: iUserData, verificationToken: string) => {
     text: `Hello, ${user.name}. Verify your email`,
     html: VERIFICATIONEMAILtEMPLATE.replace("{verifyToken}", verificationToken)
       .replace("{name}", user?.name)
-      .replace("{verificationLink}", verificationLink), // Use verificationLink here
-    // };
+      .replace(
+        "{verificationLink}",
+        // `http://localhost:2003/api/v1/verify/${verificationToken}`
+        `https://boundarymarket.onrender.com/api/v1/verify/${verificationToken}` // Use verificationLink here
+      ),
   };
 
   try {
