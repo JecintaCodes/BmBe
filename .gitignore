@@ -1,6 +1,6 @@
 node_modules
 .env
-.gitIgnore
+.gitignore
 twillo
 twillo.ts
 Mail.ts

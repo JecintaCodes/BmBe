@@ -678,7 +678,7 @@ const verifyPayment = (req, res) => __awaiter(void 0, void 0, void 0, function* 
 exports.verifyPayment = verifyPayment;
 const verifyOrderListPayments = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const { lists, customerCode, refNumb, email, userID, totalAmount } = req.body;
+        const { lists, refNumb, userID } = req.body;
         // Validate lists array
         if (!lists || !Array.isArray(lists)) {
             return res.status(400).json({ message: "Invalid lists array" });
@@ -845,7 +845,7 @@ const verifyOrderListPayments = (req, res) => __awaiter(void 0, void 0, void 0, 
 exports.verifyOrderListPayments = verifyOrderListPayments;
 const verifyOrderListPayment = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const { lists, customerCode, refNumb, email, userID, totalAmount } = req.body;
+        const { lists, refNumb, userID } = req.body;
         // Validate lists array
         if (!lists || !Array.isArray(lists)) {
             return res.status(400).json({ message: "Invalid lists array" });
@@ -972,6 +972,10 @@ const verifyOrderListPayment = (req, res) => __awaiter(void 0, void 0, void 0, f
             });
             yield listData.save();
         }
+        // Add order and payment IDs to the user document
+        yield userMode_1.default.findByIdAndUpdate(user._id, {
+            $addToSet: { lists: user._id },
+        });
         // Return response with order details
         return res.status(201).json({
             message: "Orders and payment created successfully",

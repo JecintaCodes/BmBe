@@ -740,8 +740,7 @@ export const verifyPayment = async (req: Request, res: Response) => {
 
 export const verifyOrderListPayments = async (req: Request, res: Response) => {
   try {
-    const { lists, customerCode, refNumb, email, userID, totalAmount } =
-      req.body;
+    const { lists, refNumb, userID } = req.body;
 
     // Validate lists array
     if (!lists || !Array.isArray(lists)) {
@@ -927,8 +926,7 @@ export const verifyOrderListPayments = async (req: Request, res: Response) => {
 };
 export const verifyOrderListPayment = async (req: Request, res: Response) => {
   try {
-    const { lists, customerCode, refNumb, email, userID, totalAmount } =
-      req.body;
+    const { lists, refNumb, userID } = req.body;
 
     // Validate lists array
     if (!lists || !Array.isArray(lists)) {
@@ -1081,6 +1079,10 @@ export const verifyOrderListPayment = async (req: Request, res: Response) => {
       });
       await listData.save();
     }
+    // Add order and payment IDs to the user document
+    await userMode.findByIdAndUpdate(user._id, {
+      $addToSet: { lists: user._id },
+    });
 
     // Return response with order details
     return res.status(201).json({
