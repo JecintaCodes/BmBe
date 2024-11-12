@@ -31,8 +31,8 @@ userRouter.route("/register-buyer").post(registerBuyer);
 userRouter.route("/sign-in-user").post(signInUser);
 userRouter.route("/contact-mail").post(contactMail);
 
-userRouter.route("/forget-password").get(getAllUser);
-// userRouter.route("/get-all-user").get(forgetUserPassword);
+userRouter.route("/get-all-user").get(getAllUser);
+// userRouter.route("/forget-password").get(forgetUserPassword);
 userRouter.route("/resend-code").post(sendVerificationCode);
 userRouter.route("/verify/:verificationToken").get(verifyEmail);
 

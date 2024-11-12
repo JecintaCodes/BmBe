@@ -46,7 +46,6 @@ const dotenv_1 = __importDefault(require("dotenv"));
 const mongoose_1 = require("mongoose");
 const orderModel_1 = __importDefault(require("../model/orderModel"));
 const listModel_1 = __importDefault(require("../model/listModel"));
-const email_1 = require("../mailtrap/email");
 const generateTokenAndCreateSecret_1 = require("../utils/generateTokenAndCreateSecret");
 const emails_1 = __importStar(require("../utils/emails"));
 dotenv_1.default.config();
@@ -307,7 +306,6 @@ const registerAdmin = (req, res) => __awaiter(void 0, void 0, void 0, function* 
     }
 });
 exports.registerAdmin = registerAdmin;
-// export const registerAdmin = async (req: Request, res: Response) => {
 //   try {
 //     const { name, email, telNumb, password, secretCode, status, address } =
 //       req.body;
@@ -435,42 +433,18 @@ const verifyEmail = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
 });
 exports.verifyEmail = verifyEmail;
 // Generate and send verification code
-// export const sendVerificationCode = async (req: Request, res: Response) => {
-//   try {
-//     const { email } = req.body;
-//     if (!email) {
-//       return res.status(400).json({ message: "Email is required" });
-//     }
-//     const verifyToken = Math.floor(100000 + Math.random() * 900000).toString();
-//     const updatedUser = await userModel.findOneAndUpdate(
-//       { email },
-//       { verifyToken },
-//       { new: true, upsert: true }
-//     );
-//     if (!updatedUser) {
-//       throw new Error("User not found");
-//     }
-//     await sendVerificationEmail(updatedUser, verifyToken);
-//     res.json({ message: "Verification code sent successfully" });
-//   } catch (error) {
-//     console.error(error);
-//     res.status(500).json({ message: "Error sending verification email" });
-//   }
-// };
 const sendVerificationCode = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { email } = req.body;
         if (!email) {
             return res.status(400).json({ message: "Email is required" });
         }
-        const existingUser = yield userMode_1.default.findOne({ email });
-        if (!existingUser) {
-            return res.status(404).json({ message: "User not found" });
-        }
         const verifyToken = Math.floor(100000 + Math.random() * 900000).toString();
-        yield userMode_1.default.findOneAndUpdate({ email }, { verifyToken, verifyTokenExp: Date.now() + 3600000 }, // 1 hour expiration
-        { new: true });
-        yield (0, email_1.sendVerificationEmail)(existingUser, verifyToken);
+        const updatedUser = yield userMode_1.default.findOneAndUpdate({ email }, { verifyToken }, { new: true });
+        if (!updatedUser) {
+            throw new Error("User not found");
+        }
+        yield (0, emails_1.sendMails)(updatedUser, verifyToken);
         res.json({ message: "Verification code sent successfully" });
     }
     catch (error) {
@@ -692,6 +666,7 @@ const registerBuyer = (req, res) => __awaiter(void 0, void 0, void 0, function* 
             res.status(500).send("Error generating token");
         }
         yield (0, emails_1.sendMails)(buyer, verifyToken);
+        // await sendEmailsToUser(buyer, verifyToken);
         console.log("mail sent");
         return res.status(mainError_1.HTTP.CREATED).json({
             message: "user created",

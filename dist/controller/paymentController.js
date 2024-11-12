@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.verifyOrderListPayment = exports.verifyPayment = exports.makeListPayment = exports.makePayment = void 0;
+exports.verifyOrderListPayment = exports.verifyOrderListPayments = exports.verifyPayment = exports.makeListPayment = exports.makePayment = void 0;
 const mainError_1 = require("../error/mainError");
 const axios_1 = __importDefault(require("axios"));
 const dotenv_1 = __importDefault(require("dotenv"));
@@ -676,132 +676,7 @@ const verifyPayment = (req, res) => __awaiter(void 0, void 0, void 0, function* 
     }
 });
 exports.verifyPayment = verifyPayment;
-// export const verifyOrderListPayments = async (req: Request, res: Response) => {
-//   try {
-//     const { lists, customerCode, refNumb, email, userID, totalAmount } =
-//       req.body;
-//     if (!lists || !Array.isArray(lists)) {
-//       return res.status(400).json({ message: "Invalid lists array" });
-//     }
-//     const user = await userMode.findOne({ _id: userID });
-//     if (!user) {
-//       return res.status(404).json({ message: "User not found" });
-//     }
-//     const config = {
-//       headers: {
-//         Authorization: `Bearer ${process.env.PAYSTACKKEY}`,
-//         "Content-Type": "application/json",
-//       },
-//     };
-//     const url: string = `https://api.paystack.co/transaction/verify/${refNumb}`;
-//     const result = await axios.get(url, config).then((res) => {
-//       return res.data.data;
-//     });
-//     // Validate payment data
-//     if (!result || result.status !== "success") {
-//       return res.status(400).json({ message: "Invalid payment data" });
-//     }
-//     // Check for duplicate customer code
-//     const checkDuplicateOrder = await orderModel.findOne({ customerCode });
-//     if (checkDuplicateOrder) {
-//       return res.status(404).json({ message: "Duplicate customer code" });
-//     }
-//     // Check for duplicate reference ID
-//     const checkDuplicatePayment = await paymentModel.findOne({ refNumb });
-//     if (checkDuplicatePayment) {
-//       return res.status(404).json({ message: "Duplicate reference ID" });
-//     }
-//     // Generate unique order code
-//     let orderCode;
-//     do {
-//       orderCode = Math.floor(100000 + Math.random() * 900000).toString();
-//     } while (await orderModel.findOne({ orderCode }));
-//     // Save payment data to database
-//     const paymentData = new paymentModel({
-//       refNumb,
-//       email: user?.email,
-//       amount: result.amount / 100,
-//       status: result.status,
-//       user: user._id,
-//       address: user?.address,
-//       phoneNumb: user?.telNumb,
-//       customerCode: orderCode,
-//     });
-//     await paymentData.save();
-//     // Create orders for each item
-//     const orderPromises = lists.map(async (item: any) => {
-//       if (!item.title || !item.amount) {
-//         throw new Error("Invalid order item");
-//       }
-//       // Save order data to database
-//       const orderData = new orderModel({
-//         title: item.title,
-//         amount: item.amount,
-//         totalAmount: paymentData?.amount,
-//         user: user?._id,
-//         customerCode: paymentData?.customerCode,
-//         payment: paymentData._id,
-//         productOwner: user?.name,
-//         status: paymentData?.status,
-//         address: paymentData?.address,
-//         phoneNumb: paymentData?.phoneNumb,
-//       });
-//       await orderData.save();
-//       // Update user document with order ID
-//       await userMode.findByIdAndUpdate(user._id, {
-//         $addToSet: {
-//           orders: orderData._id,
-//           payments: paymentData._id,
-//         },
-//       });
-//     });
-//     const totalAmounts = lists.reduce((acc, item) => acc + item.amount, 0);
-//     const listData = new listModel({
-//       refNumb,
-//       title: "Order List",
-//       email: user.email,
-//       amount: totalAmounts,
-//       totalAmount: totalAmounts,
-//       customerCode: paymentData?.customerCode,
-//       userID: user?._id, // Convert to ObjectId
-//       orders: lists?.map((item) => new Types.ObjectId(item._id)),
-//       lists: lists?.map((item) => ({ amount: item.amount, title: item.title })),
-//     });
-//     await listData?.save();
-//     console.log(listData);
-//     await orderModel.updateOne(
-//       { _id: req.params.id },
-//       {
-//         $push: { lists: listData._id },
-//       }
-//     );
-//     // Update user document with list ID
-//     await user.updateOne({
-//       $push: { lists: listData._id }, // Use listData._id directly
-//     });
-//     await listData.updateOne({
-//       $push: { lists: listData._id }, // Use listData._id directly
-//     });
-//     // Return response with order details
-//     return res.status(201).json({
-//       message: "Orders and payment created successfully",
-//       orderDetails: {
-//         customerCode: paymentData.customerCode,
-//         totalAmountPaid: paymentData.amount,
-//         orders: lists.map((item) => ({
-//           title: item.title,
-//           amount: item.amount,
-//         })),
-//       },
-//     });
-//   } catch (error: any) {
-//     console.error(error);
-//     return res.status(400).json({
-//       message: `Error creating order and payment: ${error.message}`,
-//     });
-//   }
-// };
-const verifyOrderListPayment = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const verifyOrderListPayments = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { lists, customerCode, refNumb, email, userID, totalAmount } = req.body;
         // Validate lists array
@@ -837,21 +712,22 @@ const verifyOrderListPayment = (req, res) => __awaiter(void 0, void 0, void 0, f
         yield userMode_1.default.findByIdAndUpdate(user._id, {
             customerCode: generatedCustomerCode,
         });
-        // Update user document with customerCode
-        yield userMode_1.default.findByIdAndUpdate(user._id, { customerCode });
         // Update existing payment document or create a new one
         const existingPayment = yield paymentModel_1.default.findOne({ refNumb });
         let paymentData;
         if (existingPayment) {
-            yield paymentModel_1.default.findByIdAndUpdate(existingPayment._id, {
-                email: user === null || user === void 0 ? void 0 : user.email,
-                amount: result.amount / 100,
-                status: result.status,
-                user: user._id,
-                address: user === null || user === void 0 ? void 0 : user.address,
-                phoneNumb: user === null || user === void 0 ? void 0 : user.telNumb,
-                customerCode: generatedCustomerCode,
-            });
+            paymentData = yield paymentModel_1.default.findOneAndUpdate({ refNumb }, {
+                $set: {
+                    email: user === null || user === void 0 ? void 0 : user.email,
+                    amount: result.amount / 100,
+                    status: result.status,
+                    user: user._id,
+                    address: user === null || user === void 0 ? void 0 : user.address,
+                    phoneNumb: user === null || user === void 0 ? void 0 : user.telNumb,
+                    customerCode: generatedCustomerCode,
+                },
+            }, { new: true, upsert: true } // Update or create if not exists
+            );
             paymentData = existingPayment;
         }
         else {
@@ -867,49 +743,43 @@ const verifyOrderListPayment = (req, res) => __awaiter(void 0, void 0, void 0, f
             });
             yield paymentData.save();
         }
-        // Check for existing order
-        // Check if order already exists for the user and customerCode
+        // Check if order already exists based on customerCode and userID
         const existingOrder = yield orderModel_1.default.findOne({
-            customerCode: paymentData === null || paymentData === void 0 ? void 0 : paymentData.customerCode,
+            customerCode: paymentData.customerCode,
             userID: user._id,
         });
         if (existingOrder) {
-            // Update the existing order
-            existingOrder.lists.push(...lists); // Add new lists to the existing order
-            // Update the total amount
-            existingOrder.totalAmount += paymentData.amount; // Increment total amount
-            existingOrder.status = paymentData.status; // Update status
-            // Ensure payments is an array before pushing
-            // if (!existingOrder.payments.includes(paymentData?._id)) {
-            //   existingOrder.payments.push(paymentData?._id); // Add reference to the payment
-            // }
-            yield existingOrder.save();
-            // Return response
+            // Update the existing order by adding new lists and adjusting totalAmount
+            yield orderModel_1.default.findByIdAndUpdate(existingOrder._id, {
+                $set: { status: paymentData.status }, // Update status
+                $inc: { totalAmount: paymentData.amount }, // Increment total amount
+                $addToSet: { lists: { $each: lists }, payments: paymentData._id }, // Add lists & payment
+            });
             return res
                 .status(200)
                 .json({ message: "Order updated successfully", order: existingOrder });
         }
         else {
-            // Create new order
+            // Create a new order
             const orderData = new orderModel_1.default({
                 title: "Customer Order",
-                email: paymentData === null || paymentData === void 0 ? void 0 : paymentData.email,
-                customerCode: paymentData === null || paymentData === void 0 ? void 0 : paymentData.customerCode,
-                userID: paymentData === null || paymentData === void 0 ? void 0 : paymentData.userID, // Ensure userID is set
-                totalAmount: paymentData === null || paymentData === void 0 ? void 0 : paymentData.amount, // Use the total amount from payment
-                lists: lists, // Use the lists directly
-                payments: [paymentData._id], // Initialize payments as an array with the payment ID
-                productOwner: user.name, // Ensure you use the user's name
-                status: paymentData === null || paymentData === void 0 ? void 0 : paymentData.status,
-                address: paymentData === null || paymentData === void 0 ? void 0 : paymentData.address,
-                phoneNumb: paymentData === null || paymentData === void 0 ? void 0 : paymentData.phoneNumb,
+                email: paymentData.email,
+                customerCode: paymentData.customerCode,
+                userID: paymentData.userID,
+                totalAmount: paymentData.amount,
+                lists,
+                payments: [paymentData._id],
+                productOwner: user.name,
+                status: paymentData.status,
+                address: paymentData.address,
+                phoneNumb: paymentData.phoneNumb,
             });
             yield orderData.save();
-            // Update user document with the order ID
+            // Update user document with the order and payment IDs
             yield userMode_1.default.findByIdAndUpdate(user._id, {
                 $addToSet: {
-                    order: orderData._id, // Add the new order ID to the user's orders
-                    payments: paymentData._id, // Add the payment ID to the user's payments
+                    orders: orderData._id,
+                    payments: paymentData._id,
                 },
             });
         }
@@ -919,19 +789,20 @@ const verifyOrderListPayment = (req, res) => __awaiter(void 0, void 0, void 0, f
         const existingList = yield listModel_1.default.findOne({ refNumb });
         if (existingList) {
             // Update existing list
-            yield listModel_1.default.findByIdAndUpdate(existingList._id, {
+            // Update or create the list based on refNumb
+            yield listModel_1.default.findOneAndUpdate({ refNumb }, {
                 title: "Order List",
                 email: user.email,
                 amount: totalAmounts,
                 totalAmount: totalAmounts,
-                customerCode: paymentData === null || paymentData === void 0 ? void 0 : paymentData.customerCode,
-                userID: paymentData === null || paymentData === void 0 ? void 0 : paymentData.userID,
-                orders: lists === null || lists === void 0 ? void 0 : lists.map((item) => new mongoose_1.Types.ObjectId(item._id)),
-                lists: lists === null || lists === void 0 ? void 0 : lists.map((item) => ({
+                customerCode: paymentData.customerCode,
+                userID: paymentData.userID,
+                orders: lists.map((item) => new mongoose_1.Types.ObjectId(item._id)),
+                lists: lists.map((item) => ({
                     amount: item.amount,
                     title: item.title,
                 })),
-            });
+            }, { new: true, upsert: true });
         }
         else {
             // Create new list
@@ -945,6 +816,156 @@ const verifyOrderListPayment = (req, res) => __awaiter(void 0, void 0, void 0, f
                 userID: paymentData === null || paymentData === void 0 ? void 0 : paymentData.userID,
                 orders: lists === null || lists === void 0 ? void 0 : lists.map((item) => new mongoose_1.Types.ObjectId(item._id)),
                 lists: lists === null || lists === void 0 ? void 0 : lists.map((item) => ({
+                    amount: item.amount,
+                    title: item.title,
+                })),
+            });
+            yield listData.save();
+        }
+        // Return response with order details
+        return res.status(201).json({
+            message: "Orders and payment created successfully",
+            orderDetails: {
+                customerCode: paymentData.customerCode,
+                totalAmountPaid: paymentData.amount,
+                orders: lists.map((item) => ({
+                    title: item.title,
+                    amount: item.amount,
+                })),
+            },
+        });
+    }
+    catch (error) {
+        console.error(error);
+        return res.status(400).json({
+            message: `Error creating order and payment: ${error.message}`,
+        });
+    }
+});
+exports.verifyOrderListPayments = verifyOrderListPayments;
+const verifyOrderListPayment = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { lists, customerCode, refNumb, email, userID, totalAmount } = req.body;
+        // Validate lists array
+        if (!lists || !Array.isArray(lists)) {
+            return res.status(400).json({ message: "Invalid lists array" });
+        }
+        // Find user by ID
+        const user = yield userMode_1.default.findOne({ _id: userID });
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
+        // Verify payment transaction
+        const config = {
+            headers: {
+                Authorization: `Bearer ${process.env.PAYSTACKKEY}`,
+                "Content-Type": "application/json",
+            },
+        };
+        const { data: { data: result }, } = yield axios_1.default.get(`https://api.paystack.co/transaction/verify/${refNumb}`, config);
+        // Validate payment data
+        if (!result || result.status !== "success") {
+            return res.status(400).json({ message: "Invalid payment data" });
+        }
+        // Generate unique customer code
+        let generatedCustomerCode;
+        do {
+            generatedCustomerCode = Math.floor(100000 + Math.random() * 900000).toString();
+        } while (yield orderModel_1.default.findOne({ customerCode: generatedCustomerCode }));
+        // Update user document with customerCode
+        yield userMode_1.default.findByIdAndUpdate(user._id, {
+            customerCode: generatedCustomerCode,
+        });
+        // Update or create payment document
+        const existingPayment = yield paymentModel_1.default.findOne({ refNumb });
+        let paymentData = existingPayment
+            ? yield paymentModel_1.default.findOneAndUpdate({ refNumb }, {
+                email: user.email,
+                amount: result.amount / 100,
+                status: result.status,
+                user: user._id,
+                address: user.address,
+                phoneNumb: user.telNumb,
+                customerCode: generatedCustomerCode,
+            }, { new: true, upsert: true })
+            : yield new paymentModel_1.default({
+                refNumb,
+                email: user.email,
+                amount: result.amount / 100,
+                status: result.status,
+                userID: user._id,
+                address: user.address,
+                phoneNumb: user.telNumb,
+                customerCode: generatedCustomerCode,
+            }).save();
+        // Check if an order already exists for this user
+        const existingOrder = yield orderModel_1.default.findOne({
+            customerCode: paymentData.customerCode,
+            userID: user._id,
+        });
+        if (existingOrder) {
+            // Update existing order
+            yield orderModel_1.default.findByIdAndUpdate(existingOrder._id, {
+                $set: { status: paymentData.status },
+                $inc: { totalAmount: paymentData.amount },
+                $addToSet: { lists: { $each: lists }, payments: paymentData._id },
+            });
+            return res.status(200).json({
+                message: "Order updated successfully",
+                order: existingOrder,
+            });
+        }
+        else {
+            // Create new order
+            const orderData = new orderModel_1.default({
+                title: "Customer Order",
+                email: paymentData.email,
+                customerCode: paymentData.customerCode,
+                userID: paymentData.userID,
+                totalAmount: paymentData.amount,
+                lists,
+                payments: [paymentData._id],
+                productOwner: user.name,
+                status: paymentData.status,
+                address: paymentData.address,
+                phoneNumb: paymentData.phoneNumb,
+            });
+            yield orderData.save();
+            // Add order and payment IDs to the user document
+            yield userMode_1.default.findByIdAndUpdate(user._id, {
+                $addToSet: { order: orderData._id, payments: paymentData._id },
+            });
+        }
+        // Calculate total amount for the list items
+        const totalAmounts = lists.reduce((acc, item) => acc + item.amount, 0);
+        // Check if list exists, if so, update; otherwise, create a new one
+        const existingList = yield listModel_1.default.findOne({ refNumb });
+        if (existingList) {
+            yield listModel_1.default.findOneAndUpdate({ refNumb }, {
+                title: "Order List",
+                email: user.email,
+                amount: totalAmounts,
+                totalAmount: totalAmounts,
+                customerCode: paymentData.customerCode,
+                userID: paymentData.userID,
+                orders: lists.map((item) => new mongoose_1.Types.ObjectId(item._id)),
+                lists: lists.map((item) => ({
+                    amount: item.amount,
+                    title: item.title,
+                })),
+            }, { new: true, upsert: true });
+        }
+        else {
+            const listData = new listModel_1.default({
+                refNumb,
+                title: "Order List",
+                email: user.email,
+                amount: totalAmounts,
+                totalAmount: totalAmounts,
+                customerCode: paymentData.customerCode,
+                userID: paymentData.userID,
+                orders: lists.map((item) => new mongoose_1.Types.ObjectId(item._id)),
+                lists: lists.map((item) => ({
                     amount: item.amount,
                     title: item.title,
                 })),

@@ -9,11 +9,8 @@ import env from "dotenv";
 import { Types } from "mongoose";
 import orderModel from "../model/orderModel";
 import listModel from "../model/listModel";
-import { sendVerificationEmail } from "../mailtrap/email";
 import { generateTokenAndSecretCode } from "../utils/generateTokenAndCreateSecret";
 import contactUsMail, { sendMails } from "../utils/emails";
-import userMode from "../model/userMode";
-import { sendEmailsToUser } from "../utils/Mails";
 env.config();
 
 // ...
