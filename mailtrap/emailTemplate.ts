@@ -68,7 +68,7 @@ export const VERIFICATIONEMAILtEMPLATE = `
                       This is an automatically generated email. Please do not
                       reply to this email. If you face any issues, please
                       contact us at
-                      <a href="#">onyemaobijecintaugochi@gmail.com</a>
+                      <a href="#">boundarymarket1@gmail.com</a>
                     </p>
                   </td>
                 </tr>
