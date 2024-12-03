@@ -4,15 +4,18 @@ interface iProduct {
   title: string;
   postBy?: string;
   img: string;
+  imgID: string;
   description?: string;
   amount: number;
   QTYinStock: number;
   storeID?: string;
+  catagorys: [{}];
+  catagory: string;
   toggle?: boolean;
-  // accountNumber: string;
   userID: string;
   users: {};
   payments: {}[];
+  orders: {}[];
 }
 
 interface iProductData extends iProduct, Document {}
@@ -32,13 +35,16 @@ const productModel = new Schema(
     img: {
       type: String,
     },
-    // accountNumber: {
-    //   type: String,
-    // },
+    imgID: {
+      type: String,
+    },
     description: {
       type: String,
     },
     storeID: {
+      type: String,
+    },
+    category: {
       type: String,
     },
     amount: {
@@ -62,6 +68,18 @@ const productModel = new Schema(
       {
         type: Types.ObjectId,
         ref: "payments",
+      },
+    ],
+    categorys: [
+      {
+        type: Types.ObjectId,
+        ref: "categories",
+      },
+    ],
+    orders: [
+      {
+        type: Types.ObjectId,
+        ref: "orders",
       },
     ],
   },

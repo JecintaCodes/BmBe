@@ -7,41 +7,130 @@ import { Types } from "mongoose";
 import orderModel from "../model/orderModel";
 import listModel from "../model/listModel";
 import mongoose from "mongoose";
+import categoryModel from "../model/categoryModel";
 
+// export const createProduct = async (req: Request, res: Response) => {
+//   try {
+//     const { userID } = req.params;
+//     const { title, description, QTYinStock, amount, categoryName } = req.body;
+//     const { secure_url }: any = await streamUpload(req);
+
+//     const user: any = await userModel.findById(userID);
+
+//     if (user && user.role === "USER") {
+//       const category = await categoryModel.findOne({ categoryName });
+//       if (!category) {
+//         console.log("invalid category");
+//       }
+//       const product: any = await productModel.create({
+//         userID: user?._id,
+//         postBy: user?.name,
+//         title,
+//         img: secure_url,
+//         QTYinStock,
+//         amount,
+//         description,
+//         category: category?.CategoryName,
+//       });
+//       if (category?.CategoryName === product?.category) {
+//         category?.products?.push(new Types.ObjectId(product?._id));
+//         category?.save();
+//         product.categorys.push(new Types.ObjectId(product?._id));
+//         product?.save();
+//         if (user && user.myStore) {
+//           user.myStore.push(new Types.ObjectId(product?._id));
+//           user.save();
+//         }
+
+//         if (product && product.category) {
+//           product.categorys.push(new Types.ObjectId(product?._id));
+//           product.save();
+//         }
+
+//         return res.status(HTTP.CREATED).json({
+//           message: `has succesfully created ${product.title} `,
+//           data: product,
+//         });
+//       } else {
+//         return res.status(HTTP.BAD_REQUEST).json({
+//           message: `wrong category`,
+//         });
+//       }
+//     } else {
+//       return res.status(HTTP.BAD_REQUEST).json({
+//         message: `you are not a user`,
+//       });
+//     }
+//   } catch (error) {
+//     return res.status(HTTP.BAD_REQUEST).json({
+//       message: `Cannot create store: ${error}`,
+//     });
+//   }
+// };
 export const createProduct = async (req: Request, res: Response) => {
   try {
     const { userID } = req.params;
-    const { title, description, QTYinStock, amount } = req.body;
+    const { title, description, QTYinStock, amount, categoryName } = req.body;
     const { secure_url }: any = await streamUpload(req);
-
+    // console.log(secure_url);
+    // Find the user creating the product
     const user: any = await userModel.findById(userID);
 
-    if (user && user.role === "USER") {
-      const product: any = await productModel.create({
-        userID: user?._id,
-        postBy: user?.name,
-        title,
-        img: secure_url,
-        QTYinStock,
-        amount,
-        description,
-      });
-
-      user?.myStore?.push(new Types.ObjectId(product?._id));
-      user?.save();
-
-      return res.status(HTTP.CREATED).json({
-        message: `has succesfully created ${product.title} `,
-        data: product,
-      });
-    } else {
+    if (!user || user.role !== "USER") {
       return res.status(HTTP.BAD_REQUEST).json({
-        message: `you are not a user`,
+        message: "You are not authorized to create a product.",
       });
     }
-  } catch (error) {
+
+    // Find the category by name
+    const category = await categoryModel.findOne({
+      categoryName: categoryName,
+    });
+    console.log(categoryName);
+    // const category = await categoryModel.findOne({
+    //   categoryName: { $regex: `^${categoryName}$`, $options: "i" },
+    // });
+    if (!category) {
+      return res.status(HTTP.BAD_REQUEST).json({
+        message: "Invalid category. Please choose a valid category.",
+      });
+    }
+
+    // Create the product with the correct category
+    const product: any = await productModel.create({
+      userID: user._id,
+      postBy: user.name,
+      title,
+      img: secure_url,
+      QTYinStock,
+      amount,
+      description,
+      category: category.categoryName,
+    });
+    console.log("object");
+    console.log("");
+    console.log("Category Name from Request:", category?.categoryName);
+    // console.log(secure_url);
+
+    // Add the product to the category's product list
+    category.products.push(new Types.ObjectId(product._id));
+    await category.save();
+
+    // Optional: Add the product to the user's store (if applicable)
+    if (user.myStore) {
+      user.myStore.push(new Types.ObjectId(product._id));
+      await user.save();
+    }
+    product?.categorys?.push(new Types.ObjectId(category?._id));
+    await product?.save();
+    // Return the created product details
+    return res.status(HTTP.CREATED).json({
+      message: `Successfully created ${product.title}.`,
+      data: product,
+    });
+  } catch (error: any) {
     return res.status(HTTP.BAD_REQUEST).json({
-      message: `Cannot create store: ${error}`,
+      message: `Cannot create product: ${error.message}`,
     });
   }
 };

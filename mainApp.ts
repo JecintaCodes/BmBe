@@ -11,6 +11,8 @@ import morgan from "morgan";
 import userRouter from "./router/userRouter";
 import productRouter from "./router/productRouter";
 import paymentRouter from "./router/paymentRouter";
+import servicesRouter from "./router/servicesRouter";
+import categoryRouter from "./router/categoryModel";
 
 export const mainApp = (app: Application) => {
   app.use((req: Request, res: Response, next: NextFunction) => {
@@ -78,6 +80,8 @@ export const mainApp = (app: Application) => {
   app.use("/api/v1", userRouter);
   app.use("/api/v1", productRouter);
   app.use("/api/v1", paymentRouter);
+  app.use("/api/v1", servicesRouter);
+  app.use("/api/v1", categoryRouter);
 
   app.get("/", (req: Request, res: Response) => {
     try {

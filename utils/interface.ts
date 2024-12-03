@@ -18,6 +18,7 @@ interface iUser {
   products: {}[];
   myStore: [];
   order: {}[];
+  services: {}[];
   verify: boolean;
   verifyToken: string;
   verifyTokenExp: string;

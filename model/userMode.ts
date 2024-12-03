@@ -31,27 +31,27 @@ const userModel = new Schema<iUserData>(
   {
     address: {
       type: String,
-      require: true,
+      required: true,
     },
     name: {
       type: String,
-      require: true,
+      required: true,
     },
     telNumb: {
       type: String,
-      require: true,
+      required: true,
     },
 
     email: {
       type: String,
-      require: true,
+      required: true,
       unique: true,
       lowercase: true,
     },
 
     password: {
       type: String,
-      require: true,
+      required: true,
     },
 
     role: {
@@ -100,6 +100,12 @@ const userModel = new Schema<iUserData>(
       {
         type: Types.ObjectId,
         ref: "prods",
+      },
+    ],
+    services: [
+      {
+        type: Types.ObjectId,
+        ref: "services",
       },
     ],
     lists: [

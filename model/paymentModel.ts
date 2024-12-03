@@ -57,7 +57,7 @@ const paymentModel = new Schema<iPaymentData>(
     products: [
       {
         type: Types.ObjectId,
-        ref: "prosucts",
+        ref: "prods",
       },
     ],
     orders: [

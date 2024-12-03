@@ -1,4 +1,4 @@
-import { Request, Response, Router } from "express";
+import express, { Application, Request, Response, Router } from "express";
 import OrderController, {
   createProduct,
   readProduct,
@@ -16,9 +16,25 @@ import OrderController, {
 } from "../controller/productController";
 import multer from "multer";
 const upload = multer().single("image");
+const app: Application = express();
 const productRouter = Router();
-
+console.log(upload);
 productRouter.route("/:userID/register-products").post(upload, createProduct);
+// const upload = multer().single("image");
+
+app.post("/register-products", upload, (req: Request, res: Response) => {
+  console.log("File received:", req.file); // Log the uploaded file
+  console.log("Request body:", req.body); // Log the rest of the request data
+
+  if (!req.file) {
+    return res
+      .status(400)
+      .json({ message: "No file uploaded. Please include an image." });
+  }
+
+  res.status(200).json({ message: "File uploaded successfully" });
+});
+
 productRouter.route("/get-all-product").get(readProduct);
 productRouter.route("/get-all-order").get(readOrders);
 productRouter.route("/get-all-list").get(viewAllLists);

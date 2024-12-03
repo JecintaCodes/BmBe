@@ -273,7 +273,6 @@ export const registerAdmin = async (req: Request, res: Response) => {
         password: harsh,
         secretCode: secret,
         role: "ADMIN",
-
         verifyToken,
         verifyTokenExp: Date.now() + 24 * 60 * 60 * 1000,
       });
@@ -509,6 +508,9 @@ export const registerUser = async (req: Request, res: Response) => {
     if (admin?.role === role.admin) {
       const salt = await genSalt(12);
       const hashedPassword = await hash(password, salt);
+      const verifyToken = Math.floor(
+        100000 + Math.random() * 900000
+      ).toString();
 
       // Create user
       const user = await userModel.create({
@@ -522,8 +524,18 @@ export const registerUser = async (req: Request, res: Response) => {
         password: hashedPassword,
         status,
         role: "USER",
-        verify: true,
+        verifyToken,
+        verifyTokenExp: Date.now() + 24 * 60 * 60 * 1000,
       });
+
+      try {
+        generateTokenAndSecretCode(res, user?._id as string);
+      } catch (error) {
+        console.error("Error generating token:", error);
+        res.status(500).send("Error generating token");
+      }
+      await sendMails(user, verifyToken);
+      console.log("mail sent");
 
       // Create Paystack subaccount
       const paystackKey = process.env.PAYSTACKKEY;
