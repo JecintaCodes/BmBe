@@ -4,6 +4,7 @@ import userMode from "../model/userMode";
 import servicesModel from "../model/servicesModel";
 import { streamUpload } from "../utils/stream";
 import categoryModel from "../model/categoryModel";
+import { role } from "../utils/role";
 
 // export const createServices = async (req: Request, res: Response) => {
 //   try {
@@ -57,12 +58,13 @@ import categoryModel from "../model/categoryModel";
 // };
 export const createServices = async (req: Request, res: Response) => {
   try {
-    const { title, url, description, amount, userID, categoryName } = req.body;
+    const { title, url, description, amount, categoryName } = req.body;
+    const { userID } = req.params;
     const { secure_url }: any = await streamUpload(req); // Upload image using your custom upload function
 
     // Find the user creating the service
     const user = await userMode.findById(userID);
-    if (!user || user.role !== "USER") {
+    if (!user || user.role !== role?.user) {
       return res.status(HTTP.BAD_REQUEST).json({
         message: "You are not a valid user",
       });
@@ -107,6 +109,7 @@ export const createServices = async (req: Request, res: Response) => {
 
     return res.status(HTTP.CREATED).json({
       message: `Service created by: ${services.serviceOwnerName}`,
+      data: services,
     });
   } catch (error: any) {
     return res.status(HTTP.BAD_REQUEST).json({

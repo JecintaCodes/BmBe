@@ -12,7 +12,7 @@ import userRouter from "./router/userRouter";
 import productRouter from "./router/productRouter";
 import paymentRouter from "./router/paymentRouter";
 import servicesRouter from "./router/servicesRouter";
-import categoryRouter from "./router/categoryModel";
+import categoryRouter from "./router/categoryRouter";
 
 export const mainApp = (app: Application) => {
   app.use((req: Request, res: Response, next: NextFunction) => {

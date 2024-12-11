@@ -24,14 +24,12 @@ export const findOneProductsCategory = async (req: Request, res: Response) => {
     const { categoryID } = req.params;
 
     // Find category by ID and populate its services
-    const prodCategory = await categoryModel
-      .findOne({ categoryID: categoryID })
-      .populate({
-        path: "prods", // Make sure this matches the field name in category schema
-        options: {
-          sort: { createdAt: -1 }, // Sorting by creation date in descending order
-        },
-      });
+    const prodCategory = await categoryModel.findById(categoryID).populate({
+      path: "prods", // Make sure this matches the field name in category schema
+      options: {
+        sort: { createdAt: -1 }, // Sorting by creation date in descending order
+      },
+    });
 
     if (!prodCategory) {
       return res.status(HTTP.BAD_REQUEST).json({
@@ -96,14 +94,12 @@ export const findOneServiceCategory = async (req: Request, res: Response) => {
     const { categoryID } = req.params;
 
     // Find category by ID and populate its services
-    const serviceCategory = await categoryModel
-      .findOne({ categoryID: categoryID })
-      .populate({
-        path: "services", // Make sure this matches the field name in category schema
-        options: {
-          sort: { createdAt: -1 }, // Sorting by creation date in descending order
-        },
-      });
+    const serviceCategory = await categoryModel.findById(categoryID).populate({
+      path: "services", // Make sure this matches the field name in category schema
+      options: {
+        sort: { createdAt: -1 }, // Sorting by creation date in descending order
+      },
+    });
 
     if (!serviceCategory) {
       return res.status(HTTP.BAD_REQUEST).json({
@@ -122,23 +118,23 @@ export const findOneServiceCategory = async (req: Request, res: Response) => {
   }
 };
 
-export const findOneBookRideCategory = async (req: Request, res: Response) => {
-  try {
-    const bookRide = await categoryModel.find().populate({
-      path: "bookRides",
-      options: {
-        sort: {
-          createdAt: -1,
-        },
-      },
-    });
-    return res.status(HTTP?.CREATED).json({
-      message: "services category",
-      data: bookRide,
-    });
-  } catch (error: any) {
-    return res.status(HTTP?.BAD_REQUEST).json({
-      message: `error ${error?.message} `,
-    });
-  }
-};
+// export const findOneBookRideCategory = async (req: Request, res: Response) => {
+//   try {
+//     const bookRide = await categoryModel.find().populate({
+//       path: "bookRides",
+//       options: {
+//         sort: {
+//           createdAt: -1,
+//         },
+//       },
+//     });
+//     return res.status(HTTP?.CREATED).json({
+//       message: "services category",
+//       data: bookRide,
+//     });
+//   } catch (error: any) {
+//     return res.status(HTTP?.BAD_REQUEST).json({
+//       message: `error ${error?.message} `,
+//     });
+//   }
+// };
