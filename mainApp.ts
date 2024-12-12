@@ -25,29 +25,14 @@ export const mainApp = (app: Application) => {
     res.header("Access-Control-Allow-Headers", "Content-Type");
     next();
   });
-  // app.use(cors({ origin: ["*"] }));
-  // cors({
-  //   origin: [
-  //     "*",
-  //     "http://localhost:5173/",
-  //     "http://localhost:4000/",
-  //     "https://boundary-market1.web.app",
-  //   ],
-  // });
-  // app.use(
-  //   cors({
-  //     origin: [
-  //       "*",
-  //       "http://localhost:5173/",
-  //       "http://localhost:4000/",
-  //       "https://boundary-market1.web.app",
-  //     ],
-  //     methods: ["GET", "POST", "PATCH", "DELETE"],
-  //     // allowedHeaders: ["Content-Type", "Authorization"],
-  //     // exposedHeaders: ["Authorization"],
-  //     // credentials: true,
-  //   })
-  // );
+  app.use(
+    cors({
+      origin: ["http://localhost:5173/", "https://boundary-market1.web.app"],
+      methods: ["GET", "POST", "PATCH", "DELETE"],
+      allowedHeaders: ["Content-Type", "Authorization"],
+      exposedHeaders: ["Authorization"],
+    })
+  );
   app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
     console.error(err);
     res.status(500).json({ message: "Internal Server Error" });
