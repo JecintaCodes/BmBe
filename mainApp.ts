@@ -61,6 +61,7 @@ export const mainApp = (app: Application) => {
   app.use("/api/v1", paymentRouter);
   app.use("/api/v1", servicesRouter);
   app.use("/api/v1", categoryRouter);
+  app.use("/api/v1", serviceCategoryRouter);
 
   app.get("/", (req: Request, res: Response) => {
     try {
