@@ -25,6 +25,8 @@ interface iUser {
   token: string;
   lists: {}[];
   payments: {}[];
+  serviceCategory: [];
+  categorys: [];
 }
 export interface iUserData extends iUser, Document {}
 

@@ -14,7 +14,7 @@ interface iServices {
   users: {}[];
   payments: string[];
   orders: string[];
-  categorys: [{}];
+  serviceCategory: [{}];
   category: string;
 }
 interface iServicesData extends iServices, Document {}
@@ -71,10 +71,10 @@ const serviceModel = new Schema<iServicesData>(
         ref: "orders",
       },
     ],
-    categorys: [
+    serviceCategory: [
       {
         type: Types.ObjectId,
-        ref: "categories",
+        ref: "servicecategories",
       },
     ],
   },

@@ -1,38 +1,39 @@
 import { model, Schema, Types } from "mongoose";
 
-interface iCategory {
+interface iProductCategory {
+  img?: string;
+  imgID?: string;
   categoryName: string;
-  services: {}[];
   products: {}[];
-  BookRide: string[];
+  // BookRide: string[];
 }
-interface iCategoryData extends iCategory, Document {}
+interface iProductCategoryData extends iProductCategory, Document {}
 
-const categoryModel = new Schema<iCategoryData>(
+const categoryModel = new Schema<iProductCategoryData>(
   {
     categoryName: {
       type: String,
       require,
     },
-    services: [
-      {
-        type: Types.ObjectId,
-        ref: "services",
-      },
-    ],
+    img: {
+      type: String,
+    },
+    imgID: {
+      type: String,
+    },
     products: [
       {
         type: Types.ObjectId,
         ref: "prods",
       },
     ],
-    BookRide: [
-      {
-        type: Types.ObjectId,
-        ref: "bookRides",
-      },
-    ],
+    // BookRide: [
+    //   {
+    //     type: Types.ObjectId,
+    //     ref: "bookRides",
+    //   },
+    // ],
   },
   { timestamps: true }
 );
-export default model<iCategoryData>("categories", categoryModel);
+export default model<iProductCategoryData>("categories", categoryModel);

@@ -127,6 +127,18 @@ const userModel = new Schema<iUserData>(
         ref: "payments",
       },
     ],
+    serviceCategory: [
+      {
+        type: Types.ObjectId,
+        ref: "servicecategories",
+      },
+    ],
+    categorys: [
+      {
+        type: Types.ObjectId,
+        ref: "categories",
+      },
+    ],
   },
   { timestamps: true }
 );
