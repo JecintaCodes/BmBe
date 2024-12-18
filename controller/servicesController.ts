@@ -117,3 +117,42 @@ export const createServices = async (req: Request, res: Response) => {
     });
   }
 };
+
+export const allServiceCategory = async (req: Request, res: Response) => {
+  try {
+    const service = await servicesModel.find().populate({
+      path: "categorys",
+      options: {
+        sort: { createdAt: -1 },
+      },
+    });
+    return res.status(HTTP.OK).json({
+      message: `gotten all services inside category`,
+      data: service,
+    });
+  } catch (error: any) {
+    res.status(HTTP.BAD_REQUEST).json({
+      mesage: `error for finding all services category ${error} `,
+    });
+  }
+};
+export const allControllerServices = async (req: Request, res: Response) => {
+  try {
+    const services = await categoryModel.find().populate({
+      path: "services",
+      options: {
+        sort: {
+          createdAt: -1,
+        },
+      },
+    });
+    return res.status(HTTP.OK).json({
+      message: "getting all categories from the services",
+      data: services,
+    });
+  } catch (error: any) {
+    return res.status(HTTP.BAD_REQUEST).json({
+      message: `error getting all controller services ${error}`,
+    });
+  }
+};

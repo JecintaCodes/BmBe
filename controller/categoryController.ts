@@ -25,7 +25,7 @@ export const findOneProductsCategory = async (req: Request, res: Response) => {
 
     // Find category by ID and populate its services
     const prodCategory = await categoryModel.findById(categoryID).populate({
-      path: "prods", // Make sure this matches the field name in category schema
+      path: "products", // Make sure this matches the field name in category schema
       options: {
         sort: { createdAt: -1 }, // Sorting by creation date in descending order
       },
@@ -138,3 +138,16 @@ export const findOneServiceCategory = async (req: Request, res: Response) => {
 //     });
 //   }
 // };
+export const getAllCategory = async (req: Request, res: Response) => {
+  try {
+    const category = await categoryModel.find();
+    return res.status(HTTP.OK).json({
+      message: "getton all categories",
+      data: category,
+    });
+  } catch (error: any) {
+    return res.status(HTTP.BAD_REQUEST).json({
+      message: `error getting categories ${error}`,
+    });
+  }
+};

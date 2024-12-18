@@ -5,9 +5,11 @@ interface iServices {
   description: string;
   title: string;
   url: string;
+  refNumb: string;
   serviceOwnerName: string;
   userID: string;
   amount: number;
+  customerCode: string;
   images: string;
   users: {}[];
   payments: string[];
@@ -30,6 +32,9 @@ const serviceModel = new Schema<iServicesData>(
     url: {
       type: String,
     },
+    customerCode: {
+      type: String,
+    },
     serviceOwnerName: {
       type: String,
     },
@@ -43,6 +48,9 @@ const serviceModel = new Schema<iServicesData>(
       type: String,
     },
     category: {
+      type: String,
+    },
+    refNumb: {
       type: String,
     },
     users: [
