@@ -5,6 +5,7 @@ import servicesModel from "../model/servicesModel";
 import { streamUpload } from "../utils/stream";
 import categoryModel from "../model/categoryModel";
 import { role } from "../utils/role";
+import serviceCategoryModel from "../model/serviceCategoryModel";
 
 // export const createServices = async (req: Request, res: Response) => {
 //   try {
@@ -58,7 +59,7 @@ import { role } from "../utils/role";
 // };
 export const createServices = async (req: Request, res: Response) => {
   try {
-    const { title, url, description, amount, categoryName } = req.body;
+    const { title, url, description, amount, ServiceCategoryName } = req.body;
     const { userID } = req.params;
     const { secure_url }: any = await streamUpload(req); // Upload image using your custom upload function
 
@@ -71,7 +72,9 @@ export const createServices = async (req: Request, res: Response) => {
     }
 
     // Find the category
-    const category = await categoryModel.findOne({ categoryName });
+    const category = await serviceCategoryModel.findOne({
+      ServiceCategoryName,
+    });
     if (!category) {
       return res.status(HTTP.BAD_REQUEST).json({
         message: "Invalid Category",
@@ -87,7 +90,7 @@ export const createServices = async (req: Request, res: Response) => {
       serviceOwnerName: user.name,
       images: secure_url,
       userID: user._id,
-      category: category.categoryName,
+      category: category.ServiceCategoryName,
     });
 
     // Update category and user to reflect new service
