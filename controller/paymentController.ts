@@ -65,8 +65,8 @@ export const makeServicePayment = async (req: Request, res: Response) => {
       callback_url: `https://boundary-market1.web.app/verify-service-payment`,
       // callback_url: `http://localhost:5173/verify-service-payment`,
       metadata: {
-        cancel_action: "https://boundary-market1.web.app/sservcheck",
-        // cancel_action: "http://localhost:5173/servcheck",
+        cancel_action: "https://boundary-market1.web.app/services",
+        // cancel_action: "http://localhost:5173/services",
       },
     });
 

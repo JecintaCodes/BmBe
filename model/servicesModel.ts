@@ -38,9 +38,11 @@ const serviceModel = new Schema<iServicesData>(
     serviceOwnerName: {
       type: String,
     },
-    userID: {
-      type: String,
-    },
+    userID: [
+      {
+        type: String,
+      },
+    ],
     amount: {
       type: Number,
     },

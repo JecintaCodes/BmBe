@@ -59,7 +59,7 @@ import serviceCategoryModel from "../model/serviceCategoryModel";
 // };
 export const createServices = async (req: Request, res: Response) => {
   try {
-    const { title, url, description, amount, ServiceCategoryName } = req.body;
+    const { title, url, description, ServiceCategoryName } = req.body;
     const { userID } = req.params;
     const { secure_url }: any = await streamUpload(req); // Upload image using your custom upload function
 
@@ -86,7 +86,6 @@ export const createServices = async (req: Request, res: Response) => {
       title,
       description,
       url,
-      amount,
       serviceOwnerName: user.name,
       images: secure_url,
       userID: user._id,
@@ -156,6 +155,27 @@ export const allControllerServices = async (req: Request, res: Response) => {
   } catch (error: any) {
     return res.status(HTTP.BAD_REQUEST).json({
       message: `error getting all controller services ${error}`,
+    });
+  }
+};
+export const getOneUserServices = async (req: Request, res: Response) => {
+  try {
+    const { userID } = req.params;
+    const user = await userMode.findById(userID).populate({
+      path: "services",
+      options: {
+        sort: {
+          createdAt: -1,
+        },
+      },
+    });
+    return res.status(HTTP.CREATED).json({
+      message: "one user services gotten",
+      data: user,
+    });
+  } catch (error: any) {
+    return res.status(HTTP.BAD_REQUEST).json({
+      message: `error getting one user services ${error?.message}`,
     });
   }
 };

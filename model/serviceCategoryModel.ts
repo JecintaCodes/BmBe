@@ -3,6 +3,7 @@ import { model, Schema, Types } from "mongoose";
 interface iServiceCategory {
   img?: string;
   imgID?: string;
+  description?: string;
   ServiceCategoryName: string;
   services: {}[];
 }
@@ -18,6 +19,9 @@ const ServiceCategoryModel = new Schema<iServiceDataCateory>(
       type: String,
     },
     imgID: {
+      type: String,
+    },
+    description: {
       type: String,
     },
     services: [

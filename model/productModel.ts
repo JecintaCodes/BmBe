@@ -13,7 +13,7 @@ interface iProduct {
   catagory: string;
   toggle?: boolean;
   userID: string;
-  users: {};
+  users: {}[];
   payments: {}[];
   orders: {}[];
 }
@@ -60,10 +60,12 @@ const productModel = new Schema(
       default: 1,
     },
 
-    users: {
-      type: Types.ObjectId,
-      ref: "users",
-    },
+    users: [
+      {
+        type: Types.ObjectId,
+        ref: "users",
+      },
+    ],
     payments: [
       {
         type: Types.ObjectId,
