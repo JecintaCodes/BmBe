@@ -15,6 +15,6 @@ serviceCategoryRouter
   .route("/get-services-category")
   .get(getAllServiceCategory);
 serviceCategoryRouter
-  .route("/:categoryID/find-one-services-category")
+  .route("/find-one-services-category/:categoryID")
   .get(findOneServiceCategory);
 export default serviceCategoryRouter;

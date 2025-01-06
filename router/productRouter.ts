@@ -13,6 +13,7 @@ import OrderController, {
   viewProductUser,
   viewAllLists,
   searchProducts,
+  readOneUserOrders,
 } from "../controller/productController";
 import multer from "multer";
 const upload = multer().single("image");
@@ -45,6 +46,7 @@ productRouter
 productRouter.route("/:userID/view-user-products").get(viewUserProduct);
 productRouter.route("/:userID/view-products-user").get(viewProductUser);
 productRouter.route("/:userID/view-orders").get(viewOrders);
+productRouter.route("/:orderID/read-user-orders").get(readOneUserOrders);
 productRouter.route("/:userID/:productID/delete-product").delete(deleteProduct);
 productRouter.route("/:userID/create-list").post(createProductList);
 productRouter.route("/:listID/delete-list").delete(deleteProductList);

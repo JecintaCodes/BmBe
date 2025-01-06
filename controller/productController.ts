@@ -165,6 +165,28 @@ export const readOrders = async (req: Request, res: Response) => {
     });
   }
 };
+export const readOneUserOrders = async (req: Request, res: Response) => {
+  try {
+    const { orderID } = req.params;
+    const orders = await orderModel.findById(orderID).populate({
+      path: "users",
+      options: {
+        sort: { createdAt: "descending" },
+      },
+    });
+    // {}, null, {
+    // sort: { createdAt: "descending" },
+    // }
+    return res.status(HTTP.OK).json({
+      message: "reading one user orders",
+      data: orders,
+    });
+  } catch (error) {
+    return res.status(HTTP.BAD_REQUEST).json({
+      message: `can't read data ${error} `,
+    });
+  }
+};
 
 export const readOneProduct = async (req: Request, res: Response) => {
   try {
@@ -179,6 +201,37 @@ export const readOneProduct = async (req: Request, res: Response) => {
   } catch (error) {
     return res.status(HTTP.BAD_REQUEST).json({
       message: `cannot read one product ${error}`,
+    });
+  }
+};
+
+export const updateUserProduct = async (req: Request, res: Response) => {
+  try {
+    const { amount, QTYinStock } = req.body;
+    const { productID } = req.params;
+
+    const product = await productModel.findById(productID);
+    if (product) {
+      const updateProduct = await productModel.findByIdAndUpdate(
+        productID,
+        {
+          amount,
+          QTYinStock,
+        },
+        { new: true }
+      );
+      return res.status(HTTP.CREATED).json({
+        message: "user Product Updated",
+        data: updateProduct,
+      });
+    } else {
+      return res.status(HTTP.BAD_REQUEST).json({
+        message: `no such product available`,
+      });
+    }
+  } catch (error) {
+    return res.status(HTTP.BAD_REQUEST).json({
+      message: `error updating user product ${error}`,
     });
   }
 };

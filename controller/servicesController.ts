@@ -3,7 +3,6 @@ import { HTTP } from "../error/mainError";
 import userMode from "../model/userMode";
 import servicesModel from "../model/servicesModel";
 import { streamUpload } from "../utils/stream";
-import categoryModel from "../model/categoryModel";
 import { role } from "../utils/role";
 import serviceCategoryModel from "../model/serviceCategoryModel";
 
@@ -59,7 +58,7 @@ import serviceCategoryModel from "../model/serviceCategoryModel";
 // };
 export const createServices = async (req: Request, res: Response) => {
   try {
-    const { title, url, description, ServiceCategoryName } = req.body;
+    const { title, url, description, serviceCategoryName } = req.body;
     const { userID } = req.params;
     const { secure_url }: any = await streamUpload(req); // Upload image using your custom upload function
 
@@ -73,7 +72,7 @@ export const createServices = async (req: Request, res: Response) => {
 
     // Find the category
     const category = await serviceCategoryModel.findOne({
-      ServiceCategoryName,
+      serviceCategoryName: serviceCategoryName,
     });
     if (!category) {
       return res.status(HTTP.BAD_REQUEST).json({
@@ -89,11 +88,11 @@ export const createServices = async (req: Request, res: Response) => {
       serviceOwnerName: user.name,
       images: secure_url,
       userID: user._id,
-      category: category.ServiceCategoryName,
+      category: category.serviceCategoryName,
     });
 
     // Update category and user to reflect new service
-    await categoryModel.updateOne(
+    await serviceCategoryModel.updateOne(
       { _id: category._id },
       { $push: { services: services._id } } // Add the service ID to the category's services array
     );
@@ -119,7 +118,6 @@ export const createServices = async (req: Request, res: Response) => {
     });
   }
 };
-
 export const allServiceCategory = async (req: Request, res: Response) => {
   try {
     const service = await servicesModel.find().populate({
@@ -138,26 +136,26 @@ export const allServiceCategory = async (req: Request, res: Response) => {
     });
   }
 };
-export const allControllerServices = async (req: Request, res: Response) => {
-  try {
-    const services = await categoryModel.find().populate({
-      path: "services",
-      options: {
-        sort: {
-          createdAt: -1,
-        },
-      },
-    });
-    return res.status(HTTP.OK).json({
-      message: "getting all categories from the services",
-      data: services,
-    });
-  } catch (error: any) {
-    return res.status(HTTP.BAD_REQUEST).json({
-      message: `error getting all controller services ${error}`,
-    });
-  }
-};
+// export const allCategoryServices = async (req: Request, res: Response) => {
+//   try {
+//     const services = await serviceCategoryModel.find().populate({
+//       path: "services",
+//       options: {
+//         sort: {
+//           createdAt: -1,
+//         },
+//       },
+//     });
+//     return res.status(HTTP.OK).json({
+//       message: "getting all categories from the services",
+//       data: services,
+//     });
+//   } catch (error: any) {
+//     return res.status(HTTP.BAD_REQUEST).json({
+//       message: `error getting all controller services ${error}`,
+//     });
+//   }
+// };
 export const getOneUserServices = async (req: Request, res: Response) => {
   try {
     const { userID } = req.params;
@@ -176,6 +174,35 @@ export const getOneUserServices = async (req: Request, res: Response) => {
   } catch (error: any) {
     return res.status(HTTP.BAD_REQUEST).json({
       message: `error getting one user services ${error?.message}`,
+    });
+  }
+};
+export const getAllServices = async (req: Request, res: Response) => {
+  try {
+    const services = await servicesModel.find();
+
+    return res.status(HTTP.OK).json({
+      message: "gotten all services",
+      data: services,
+    });
+  } catch (error: any) {
+    return res.status(HTTP.BAD_REQUEST).json({
+      message: `error getting all services ${error?.message} `,
+    });
+  }
+};
+
+export const getOneService = async (req: Request, res: Response) => {
+  try {
+    const { serviceID } = req.params;
+    const service = await servicesModel.findById(serviceID);
+    return res.status(HTTP.OK).json({
+      message: `gotten on service`,
+      data: service,
+    });
+  } catch (error) {
+    return res.status(HTTP.BAD_REQUEST).json({
+      message: `error getting one services ${error}`,
     });
   }
 };

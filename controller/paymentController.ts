@@ -62,11 +62,11 @@ export const makeServicePayment = async (req: Request, res: Response) => {
     const params = JSON.stringify({
       email,
       amount: `${parseInt(amount) * 100}`,
-      callback_url: `https://boundary-market1.web.app/verify-service-payment`,
-      // callback_url: `http://localhost:5173/verify-service-payment`,
+      // callback_url: `https://boundary-market1.web.app/verify-service`,
+      callback_url: `http://localhost:5173/verify-service`,
       metadata: {
-        cancel_action: "https://boundary-market1.web.app/services",
-        // cancel_action: "http://localhost:5173/services",
+        // cancel_action: "https://boundary-market1.web.app/services",
+        cancel_action: "http://localhost:5173/services",
       },
     });
 
@@ -909,14 +909,14 @@ export const verifyServicePayment = async (req: Request, res: Response) => {
     //   categorys: [{}];
     //   category: string;
     // Check if list exists, if so, update; otherwise, create a new one
-    const existingService = await listModel.findOne({ refNumb });
+    const existingService = await servicesModel.findOne({ refNumb });
     if (existingService) {
       await servicesModel.findOneAndUpdate(
         { refNumb },
         {
           title: service?.title,
           url: service?.url,
-          description: service?._id,
+          description: service?.description,
           email: user.email,
           category: service?.category,
           images: service?.images,
@@ -930,13 +930,13 @@ export const verifyServicePayment = async (req: Request, res: Response) => {
         { new: true, upsert: true }
       );
     } else {
-      const servicesModel = new listModel({
+      const servicesMod = new servicesModel({
         refNumb,
         title: service?.title,
         email: user.email,
         amount: paymentData?.amount,
         url: service?.url,
-        description: service?._id,
+        description: service?.description,
         customerCode: paymentData.customerCode,
         userID: paymentData.userID,
         category: service?.category,
@@ -944,11 +944,19 @@ export const verifyServicePayment = async (req: Request, res: Response) => {
         serviceOwnerName: service?.serviceOwnerName,
         orders: service?._id,
       });
-      await servicesModel.save();
+      await servicesMod.save();
     }
     // Add order and payment IDs to the user document
     await userMode.findByIdAndUpdate(user._id, {
       $addToSet: { orders: user._id, payments: user?._id, services: user?._id },
+    });
+    // Add order and payment IDs to the service document
+    await servicesModel.findByIdAndUpdate(service._id, {
+      $addToSet: {
+        orders: service._id,
+        payments: service?._id,
+        users: service?._id,
+      },
     });
 
     // Return response with order details

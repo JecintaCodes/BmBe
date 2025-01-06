@@ -4,14 +4,14 @@ interface iServiceCategory {
   img?: string;
   imgID?: string;
   description?: string;
-  ServiceCategoryName: string;
+  serviceCategoryName: string;
   services: {}[];
 }
 interface iServiceDataCateory extends iServiceCategory, Document {}
 
 const ServiceCategoryModel = new Schema<iServiceDataCateory>(
   {
-    ServiceCategoryName: {
+    serviceCategoryName: {
       type: String,
       require,
     },
