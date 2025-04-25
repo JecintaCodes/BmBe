@@ -113,16 +113,34 @@ export const createProduct = async (req: Request, res: Response) => {
     // console.log(secure_url);
 
     // Add the product to the category's product list
-    category.products.push(new Types.ObjectId(product._id));
-    await category.save();
+    // category.products.push(new Types.ObjectId(product._id));
+    // await category.save();
 
     // Optional: Add the product to the user's store (if applicable)
-    if (user.myStore) {
-      user.myStore.push(new Types.ObjectId(product._id));
-      await user.save();
-    }
-    product?.categorys?.push(new Types.ObjectId(category?._id));
-    await product?.save();
+    // if (user.myStore) {
+    //   user.myStore.push(new Types.ObjectId(product._id));
+    //   await user.save();
+    // }
+    // product?.categorys?.push(new Types.ObjectId(category?._id));
+    // product?.users?.push(new Types.ObjectId(product?._id));
+    // await product?.save();
+    // user?.products?.push(new Types.ObjectId(user?._id));
+    // user?.save();
+    await userModel.findByIdAndUpdate(user._id, {
+      $addToSet: { products: user._id, myStore: product?._id },
+    });
+
+    await productModel.findByIdAndUpdate(product._id, {
+      $addToSet: {
+        users: product?._id,
+        categorys: product?._id,
+      },
+    });
+    await categoryModel.findByIdAndUpdate(category?._id, {
+      $addToSet: {
+        products: product?._id,
+      },
+    });
     // Return the created product details
     return res.status(HTTP.CREATED).json({
       message: `Successfully created ${product.title}.`,
@@ -454,45 +472,148 @@ export const viewOrders = async (req: Request, res: Response) => {
     });
   }
 };
-
 export const deleteProduct = async (req: Request, res: Response) => {
   try {
-    const { userID, productID } = req.params;
+    const { userID, categoryID, productID } = req.params;
 
     const user: any = await userModel.findById(userID);
 
     if (user) {
       const product = await productModel.findById(productID);
 
-      console.log(user?._id);
-      console.log(product?.userID);
+      if (product) {
+        console.log(user?._id);
+        console.log(product?.userID);
 
-      if (product?.userID === user?._id.toString()) {
-        const deleteProduct = await productModel.findByIdAndDelete(productID);
+        if (product?.userID === user?._id.toString()) {
+          // Remove product ID from user's products and myStore arrays
+          await userModel.updateMany(
+            { products: product?._id },
+            {
+              $pull: {
+                products: user?._id,
+                myStore: product?._id,
+              },
+            }
+          );
 
-        user?.myStore?.pull(new Types.ObjectId(productID));
-        user?.save();
+          // Remove product ID from category's products array
+          await categoryModel.updateMany(
+            { _id: categoryID, products: product?._id },
+            {
+              $pull: {
+                products: product?._id,
+              },
+            }
+          );
 
-        return res.status(HTTP.OK).json({
-          message: "product deleted",
-          data: deleteProduct,
-        });
+          // Remove product document
+          const deletedProduct = await productModel.findByIdAndDelete(
+            productID
+          );
+
+          return res.status(HTTP.OK).json({
+            message: "Product Deleted",
+            data: deletedProduct,
+          });
+        } else {
+          return res.status(HTTP.BAD_REQUEST).json({
+            message: `This product does not belong to you.`,
+          });
+        }
       } else {
         return res.status(HTTP.BAD_REQUEST).json({
-          message: `this product does not belong to you `,
+          message: "Invalid product.",
         });
       }
     } else {
       return res.status(HTTP.BAD_REQUEST).json({
-        message: `you are not a user `,
+        message: `You are not a user.`,
       });
     }
   } catch (error) {
     return res.status(HTTP.BAD_REQUEST).json({
-      message: `error deleting product ${error}`,
+      message: `Error deleting product: ${error}`,
     });
   }
 };
+
+// export const deleteProduct = async (req: Request, res: Response) => {
+//   try {
+//     const { userID, categoryID, productID } = req.params;
+
+//     const user: any = await userModel.findById(userID);
+
+//     if (user) {
+//       const category = await categoryModel.findById(categoryID);
+//       if (category) {
+//         const product = await productModel.findById(productID);
+
+//         console.log(user?._id);
+//         console.log(product?.userID);
+
+//         if (product?.userID === user?._id.toString()) {
+//           const deleteProduct = await productModel.findByIdAndDelete(productID);
+
+//           // Remove product ID from user's products and myStore arrays
+//           await userModel.updateMany(
+//             { products: product._id },
+//             {
+//               $pull: {
+//                 products: product._id,
+//                 myStore: product._id,
+//               },
+//             }
+//           );
+//           // Remove product ID from user's products and myStore arrays
+//           // await userModel.updateMany(
+//           //   { products: product._id },
+//           //   {
+//           //     $pull: {
+//           //       products: product._id,
+//           //       myStore: product._id,
+//           //     },
+//           //   }
+//           // );
+
+//           // // Remove product ID from category's products array
+//           // await categoryModel.updateMany(
+//           //   { products: product._id },
+//           //   {
+//           //     $pull: {
+//           //       products: product._id,
+//           //     },
+//           //   }
+//           // );
+
+//           // // Remove product document
+//           // await productModel.deleteOne({ _id: product._id });
+
+//           return res.status(HTTP.OK).json({
+//             message: "Product Deleted",
+//             data: deleteProduct,
+//           });
+//         } else {
+//           return res.status(HTTP.BAD_REQUEST).json({
+//             message: `this product does not belong to you `,
+//           });
+//         }
+//       } else {
+//         return res.status(HTTP.BAD_REQUEST).json({
+//           message: "invalid Category",
+//         });
+//       }
+//     } else {
+//       return res.status(HTTP.BAD_REQUEST).json({
+//         message: `you are not a user `,
+//       });
+//     }
+//   } catch (error) {
+//     return res.status(HTTP.BAD_REQUEST).json({
+//       message: `error deleting product ${error}`,
+//     });
+//   }
+// };
 export const viewLists = async (req: Request, res: Response) => {
   try {
     const { title } = req.body;

@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import { HTTP } from "../error/mainError";
-import userMode from "../model/userMode";
+import userModel from "../model/userMode";
 import servicesModel from "../model/servicesModel";
 import { streamUpload } from "../utils/stream";
 import { role } from "../utils/role";
@@ -63,7 +63,7 @@ export const createServices = async (req: Request, res: Response) => {
     const { secure_url }: any = await streamUpload(req); // Upload image using your custom upload function
 
     // Find the user creating the service
-    const user = await userMode.findById(userID);
+    const user = await userModel.findById(userID);
     if (!user || user.role !== role?.user) {
       return res.status(HTTP.BAD_REQUEST).json({
         message: "You are not a valid user",
@@ -97,15 +97,15 @@ export const createServices = async (req: Request, res: Response) => {
       { $push: { services: services._id } } // Add the service ID to the category's services array
     );
 
-    await userMode.updateOne(
+    await userModel.updateOne(
       { _id: user._id },
-      { $push: { services: services._id } } // Add the service ID to the user's services array
+      { $push: { services: services._id, serviceCategory: services?._id } } // Add the service ID to the user's services array
     );
 
     // Update the service to reflect the user and category references
     await servicesModel.updateOne(
       { _id: services._id },
-      { $push: { users: user._id, categorys: category._id } } // Add user and category to the service's respective arrays
+      { $push: { users: user._id, serviceCategory: category._id } } // Add user and category to the service's respective arrays
     );
 
     return res.status(HTTP.CREATED).json({
@@ -159,7 +159,7 @@ export const allServiceCategory = async (req: Request, res: Response) => {
 export const getOneUserServices = async (req: Request, res: Response) => {
   try {
     const { userID } = req.params;
-    const user = await userMode.findById(userID).populate({
+    const user = await userModel.findById(userID).populate({
       path: "services",
       options: {
         sort: {
@@ -203,6 +203,69 @@ export const getOneService = async (req: Request, res: Response) => {
   } catch (error) {
     return res.status(HTTP.BAD_REQUEST).json({
       message: `error getting one services ${error}`,
+    });
+  }
+};
+
+export const deleteService = async (req: Request, res: Response) => {
+  try {
+    const { userID, serviceCategoryID, serviceID } = req.params;
+
+    const user = await userModel.findById(userID);
+
+    if (user) {
+      const service = await servicesModel.findByIdAndDelete(serviceID);
+
+      if (service) {
+        await userModel.updateMany(
+          {
+            services: service?._id,
+          },
+          {
+            $pull: {
+              services: service._id,
+              serviceCategory: serviceCategoryID,
+            },
+          }
+        );
+        await serviceCategoryModel.updateMany(
+          {
+            _id: serviceCategoryID,
+            services: service?._id,
+          },
+          {
+            $pull: {
+              services: service?._id,
+            },
+          }
+        );
+
+        await servicesModel.updateMany(
+          { _id: service?._id, users: user?._id },
+          {
+            $pull: {
+              users: user?._id,
+              serviceCategory: serviceCategoryID,
+            },
+          }
+        );
+        return res.status(HTTP.OK).json({
+          message: "services deleted",
+          data: service,
+        });
+      } else {
+        return res.status(HTTP.BAD_REQUEST).json({
+          message: `service not found`,
+        });
+      }
+    } else {
+      return res.status(HTTP.BAD_REQUEST).json({
+        message: `user not found`,
+      });
+    }
+  } catch (error: any) {
+    return res.status(HTTP.BAD_REQUEST).json({
+      message: `error deleting service ${error?.message}`,
     });
   }
 };

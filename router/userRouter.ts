@@ -1,6 +1,7 @@
 import { Router } from "express";
 import {
   contactMail,
+  deleteBuyerAndAdmin,
   getAllUser,
   getOneUser,
   registerAdmin,
@@ -37,7 +38,7 @@ userRouter.route("/resend-code").post(sendVerificationCode);
 userRouter.route("/verify/:verificationToken").get(verifyEmail);
 
 userRouter.route("/:userID/get-one-user").get(getOneUser);
-
+userRouter.route("/delete-user").delete(deleteBuyerAndAdmin);
 userRouter.route("/:userID/update-image").patch(upload, updateUserImage);
 userRouter.route("/:userID/update-name").patch(updateUserName);
 userRouter.route("/:userID/verifyToken").patch(verifyUserAccount);

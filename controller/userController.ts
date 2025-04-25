@@ -11,6 +11,7 @@ import orderModel from "../model/orderModel";
 import listModel from "../model/listModel";
 import { generateTokenAndSecretCode } from "../utils/generateTokenAndCreateSecret";
 import contactUsMail, { sendMails } from "../utils/emails";
+import productModel from "../model/productModel";
 env.config();
 
 // ...
@@ -1053,5 +1054,37 @@ export const contactMail = async (req: Request, res: Response) => {
   } catch (error) {
     console.error(error);
     res.status(500).json({ success: false, error });
+  }
+};
+export const deleteBuyerAndAdmin = async (req: Request, res: Response) => {
+  try {
+    const { userID } = req.params;
+    const user = await userModel.findByIdAndDelete(userID);
+    return res.status(HTTP.OK).json({
+      message: "buyer deleted",
+      data: user,
+    });
+  } catch (error: any) {
+    return res.status(HTTP.BAD_REQUEST).json({
+      message: `error deleting user ${error}`,
+    });
+  }
+};
+export const deleteUser = async (req: Request, res: Response) => {
+  try {
+    const { userID, productID, serviceID } = req.params;
+
+    const user = await userModel.findByIdAndDelete(userID);
+
+    // await productModel.
+
+    return res.status(HTTP.OK).json({
+      message: "user deleted",
+      data: user,
+    });
+  } catch (error) {
+    return res.status(HTTP.BAD_REQUEST).json({
+      message: `error deleting user ${error}`,
+    });
   }
 };

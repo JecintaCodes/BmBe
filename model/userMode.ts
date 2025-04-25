@@ -121,6 +121,12 @@ const userModel = new Schema<iUserData>(
         ref: "orders",
       },
     ],
+    products: [
+      {
+        type: Types.ObjectId,
+        ref: "prods",
+      },
+    ],
     payments: [
       {
         type: Types.ObjectId,

@@ -21,20 +21,24 @@ const app: Application = express();
 const productRouter = Router();
 console.log(upload);
 productRouter.route("/:userID/register-products").post(upload, createProduct);
+
 // const upload = multer().single("image");
+// app.post(
+//   "/:userID/register-products",
+//   upload,
+//   (req: Request, res: Response) => {
+//     console.log("File received:", req.file); // Log the uploaded file
+//     console.log("Request body:", req.body); // Log the rest of the request data
 
-app.post("/register-products", upload, (req: Request, res: Response) => {
-  console.log("File received:", req.file); // Log the uploaded file
-  console.log("Request body:", req.body); // Log the rest of the request data
+//     if (!req.file) {
+//       return res
+//         .status(400)
+//         .json({ message: "No file uploaded. Please include an image." });
+//     }
 
-  if (!req.file) {
-    return res
-      .status(400)
-      .json({ message: "No file uploaded. Please include an image." });
-  }
-
-  res.status(200).json({ message: "File uploaded successfully" });
-});
+//     res.status(200).json({ message: "File uploaded successfully" });
+//   }
+// );
 
 productRouter.route("/get-all-product").get(readProduct);
 productRouter.route("/get-all-order").get(readOrders);
@@ -47,7 +51,9 @@ productRouter.route("/:userID/view-user-products").get(viewUserProduct);
 productRouter.route("/:userID/view-products-user").get(viewProductUser);
 productRouter.route("/:userID/view-orders").get(viewOrders);
 productRouter.route("/:orderID/read-user-orders").get(readOneUserOrders);
-productRouter.route("/:userID/:productID/delete-product").delete(deleteProduct);
+productRouter
+  .route("/:userID/:categoryID/:productID/delete-product")
+  .delete(deleteProduct);
 productRouter.route("/:userID/create-list").post(createProductList);
 productRouter.route("/:listID/delete-list").delete(deleteProductList);
 productRouter.route("/search").get(searchProducts);
