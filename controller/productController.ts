@@ -254,31 +254,73 @@ export const updateUserProduct = async (req: Request, res: Response) => {
   }
 };
 
-export const updateProducts = async (req: Request, res: Response) => {
+// export const updateProducts = async (req: Request, res: Response) => {
+//   try {
+//     const { productID } = req.params;
+//     const { title, description, QTYpurchased, amount } = req.body;
+//     const { secure_url }: any = await streamUpload(req);
+
+//     const product = await productModel.findById(productID);
+
+//     if (product) {
+//       let viewProduct = await productModel.findByIdAndUpdate(
+//         productID,
+//         {
+//           QTYinStock: product.QTYinStock - QTYpurchased,
+//           title,
+//           amount,
+//           img: secure_url,
+//           description,
+//         },
+//         { new: true }
+//       );
+//       return res.status(HTTP.CREATED).json({
+//         message: "One product gotten",
+//         data: viewProduct,
+//       });
+//     } else {
+//       return res.status(HTTP.BAD_REQUEST).json({
+//         message: `error getting One product`,
+//       });
+//     }
+//   } catch (error) {
+//     return res.status(HTTP.BAD_REQUEST).json({
+//       message: `error getting One product ${error}`,
+//     });
+//   }
+// };
+export const updateProduct = async (req: Request, res: Response) => {
   try {
     const { productID } = req.params;
-    const { QTYpurchased } = req.body;
+    const { title, description, QTYinStock, amount } = req.body;
+    const { secure_url }: any = await streamUpload(req);
 
     const product = await productModel.findById(productID);
 
     if (product) {
-      let viewProduct = await productModel.findByIdAndUpdate(
+      let updatedProduct = await productModel.findByIdAndUpdate(
         productID,
-        { QTYinStock: product.QTYinStock - QTYpurchased },
+        {
+          title,
+          amount,
+          img: secure_url,
+          description,
+          QTYinStock,
+        },
         { new: true }
       );
-      return res.status(HTTP.CREATED).json({
-        message: "One product gotten",
-        data: viewProduct,
+      return res.status(HTTP.OK).json({
+        message: "Product updated successfully",
+        data: updatedProduct,
       });
     } else {
       return res.status(HTTP.BAD_REQUEST).json({
-        message: `error getting One product`,
+        message: `Product not found`,
       });
     }
   } catch (error) {
     return res.status(HTTP.BAD_REQUEST).json({
-      message: `error getting One product ${error}`,
+      message: `Error updating product: ${error}`,
     });
   }
 };
