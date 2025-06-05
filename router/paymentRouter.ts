@@ -3,6 +3,10 @@ import {
   makeListPayment,
   makePayment,
   makeServicePayment,
+  totalOrders,
+  totalPayment,
+  userTotalOrders,
+  userTotalPayment,
   verifyOrderListPayment,
   verifyPayment,
   verifyServicePayment,
@@ -16,6 +20,11 @@ paymentRouter.route("/list-verify-payment").post(verifyOrderListPayment);
 paymentRouter.route("/list-make-payment").post(makeListPayment);
 paymentRouter.route("/make-service-payment").post(makeServicePayment);
 paymentRouter.route("/verify-service-payment").post(verifyServicePayment);
+paymentRouter.route("/total-order").get(totalOrders);
+paymentRouter.route("/total-payment").get(totalPayment);
+paymentRouter.route("/:userID/user-total-order").get(userTotalOrders);
+paymentRouter.route("/:userID/user-total-payment").get(userTotalPayment);
+
 
 // paymentRouter.route("/:userID/sub-acc").post(createSubaccount);
 // paymentRouter.route("/:userID/split-payment").post(initializeSplitPayment);

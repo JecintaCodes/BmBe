@@ -976,3 +976,94 @@ export const verifyServicePayment = async (req: Request, res: Response) => {
     });
   }
 };
+
+export const totalPayment = async (req: Request, res: Response) => {
+  try {
+    const { amount } = req.body;
+    // await paymentModel.create({ amount });
+    // Add the new payment to the total amount
+    const total = await paymentModel.aggregate([
+      {
+        $group: {
+          _id: null,
+          totalAmount: { $sum: "$amount" },
+        },
+      },
+    ]);
+
+    const totalAmount = total.length > 0 ? total[0].totalAmount : amount;
+    return res.status(HTTP.CREATED).json({
+      message: `Total payment updated`,
+      data: totalAmount,
+    });
+  } catch (error: any) {
+    return res.status(HTTP.BAD_REQUEST).json({
+      message: `Error getting total payment ${error.message}`,
+    });
+  }
+};
+export const totalOrders = async (req: Request, res: Response) => {
+  try {
+    const total = await orderModel.countDocuments();
+    return res.status(HTTP.CREATED).json({
+      message: `total orders gotten`,
+      data: total,
+    });
+  } catch (error: any) {
+    return res.status(HTTP.BAD_REQUEST).json({
+      message: `error getting total orders ${error.message}`,
+    });
+  }
+};
+export const userTotalOrders = async(req:Request,res:Response)=>{
+  try {
+    const {userID}=req.params;
+    const user = await userMode.findById(userID);
+    if (user == null) {
+      console.log("u are not a user")
+    }
+    const totalOrders = await orderModel.countDocuments({userID})
+    return res.status(HTTP.OK).json({
+      message:"total Orders Product gotten",
+      data:totalOrders
+    })
+
+  } catch (error) {
+    return res.status(HTTP.BAD_REQUEST).json({
+      message:`error getting total user Product`
+    })
+  }
+}
+export const userTotalPayment = async (req: Request, res: Response) => {
+  try {
+    const { userID } = req.params;
+    const user = await userMode.findById(userID);
+    if (!user) {
+      return res.status(HTTP.OK).json({
+        message: "User not found",
+      });
+    }
+
+    const total = await paymentModel.aggregate([
+      {
+        $match: { userID: userID },
+      },
+      {
+        $group: {
+          _id: null,
+          totalAmount: { $sum: "$amount" },
+        },
+      },
+    ]);
+
+    const totalAmount = total.length > 0 ? total[0].totalAmount : 0;
+    return res.status(HTTP.OK).json({
+      message: `Total payment retrieved`,
+      data: totalAmount,
+    });
+  } catch (error: any) {
+    return res.status(HTTP.BAD_REQUEST).json({
+      message: `Error getting total payment ${error.message}`,
+    });
+  }
+};

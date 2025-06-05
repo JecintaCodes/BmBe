@@ -15,6 +15,11 @@ import OrderController, {
   searchProducts,
   readOneUserOrders,
   updateProduct,
+  TotalProduct,
+  TotalList,
+  totalQtyProd,
+  userTotalProduct,
+  userTotalQtyProd,
 } from "../controller/productController";
 import multer from "multer";
 const upload = multer().single("image");
@@ -40,7 +45,11 @@ productRouter.route("/:userID/register-products").post(upload, createProduct);
 //     res.status(200).json({ message: "File uploaded successfully" });
 //   }
 // );
-
+productRouter.route("/:userID/total-user-qty").get(userTotalQtyProd)
+productRouter.route("/:userID/total-user-prod").get(userTotalProduct)
+productRouter.route("/total-qty").get(totalQtyProd)
+productRouter.route("/total-list").get(TotalList)
+productRouter.route("/total-product").get(TotalProduct)
 productRouter.route("/get-all-product").get(readProduct);
 productRouter.route("/get-all-order").get(readOrders);
 productRouter.route("/get-all-list").get(viewAllLists);

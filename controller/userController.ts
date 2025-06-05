@@ -399,6 +399,7 @@ export const verifyUserAccount = async (req: Request, res: Response) => {
         userID,
         {
           verifyToken: "",
+          verifyTokenExp: "",
           verify: true,
         },
         { new: true }
@@ -414,6 +415,7 @@ export const verifyUserAccount = async (req: Request, res: Response) => {
     return res.status(404).json({ message: error.message });
   }
 };
+
 
 // export const verifyEmail = async (req: Request, res: Response) => {
 //   const { verificationToken } = req.params;
@@ -1088,3 +1090,18 @@ export const deleteUser = async (req: Request, res: Response) => {
     });
   }
 };
+export const getTotalUser = async(req:Request, res:Response)=>{
+  try {
+    const total = await userModel.countDocuments()
+    return res.status(HTTP.OK).json({
+      message:`got all users number`,
+      data: total
+    })
+  } catch (error: any) {
+    console.error(error)
+    return res.status(HTTP.BAD_REQUEST).json({
+      message: `error getting user number :${error.message}`,
+      
+    })
+  }
+}

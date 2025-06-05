@@ -1290,3 +1290,146 @@ export const searchProducts = async (req: Request, res: Response) => {
     });
   }
 };
+
+export const TotalProduct = async (req: Request, res: Response) => {
+  try {
+    const total = await productModel.countDocuments();
+    return res.status(HTTP.OK).json({
+      message: `total products gotten from the database`,
+      data: total,
+    });
+  } catch (error) {
+    return res.status(HTTP.BAD_REQUEST).json({
+      message: `error getting total products :${error} `,
+    });
+  }
+};
+export const TotalList = async (req: Request, res: Response) => {
+  try {
+    const total = await listModel.countDocuments();
+    return res.status(HTTP.OK).json({
+      message: `total Lists gotten from the database`,
+      data: total,
+    });
+  } catch (error) {
+    return res.status(HTTP.BAD_REQUEST).json({
+      message: `error getting total Lists :${error} `,
+    });
+  }
+};
+// export const totalQtyProd = async (req:Request, res:Response)=>{
+//   try {
+//     const {QTYinStock} = req.body;
+
+//     await productModel.create({QTYinStock})
+
+//     const total = await productModel.aggregate([
+//       {
+//         $group:{
+//           _id:null,
+//          totalQty: {$sum: "$QTYinStock"}
+//         }
+//       }
+//     ])
+
+//     const totalQty = total.length > 0 ? total[0].totalQty:QTYinStock;
+
+//     return res.status(HTTP.OK).json({
+//       message:" all quantity gotten from the database",
+//       data: totalQty
+//     })
+
+//   } catch (error:any) {
+//     return res.status(HTTP.BAD_REQUEST).json({
+//       message:`error creating total rod QTY: ${error.message}`
+//     })
+//   }
+// }
+
+export const totalQtyProd = async (req: Request, res: Response) => {
+  try {
+    const { QTYinStock } = req.body;
+
+    if (QTYinStock <= 0) {
+      return res.status(HTTP.BAD_REQUEST).json({
+        message: "Quantity must be a positive number",
+      });
+    }
+
+    const totalQuantityResult = await productModel.aggregate([
+      {
+        $group: {
+          _id: null,
+          totalQty: { $sum: "$QTYinStock" },
+        },
+      },
+    ]);
+
+    const totalQty =
+      totalQuantityResult.length > 0
+        ? totalQuantityResult[0].totalQty
+        : QTYinStock;
+
+    return res.status(HTTP.CREATED).json({
+      message: "Total quantity retrieved successfully",
+      data: totalQty,
+    });
+  } catch (error: any) {
+    return res.status(HTTP.BAD_REQUEST).json({
+      message: `Error calculating total quantity: ${error.message}`,
+    });
+  }
+};
+export const userTotalQtyProd = async (req: Request, res: Response) => {
+  try {
+    const { userID } = req.params;
+    const user = await userModel.findById(userID);
+    if (!user) {
+      return res.status(HTTP.BAD_REQUEST).json({
+        message: "User not found",
+      });
+    }
+
+    const totalQuantityResult = await productModel.aggregate([
+      {
+        $match: { userID: userID },
+      },
+      {
+        $group: {
+          _id: null,
+          totalQty: { $sum: "$QTYinStock" },
+        },
+      },
+    ]);
+
+    const totalQty = totalQuantityResult.length > 0 ? totalQuantityResult[0].totalQty : 0;
+
+    return res.status(HTTP.OK).json({
+      message: "Total quantity retrieved successfully",
+      data: totalQty,
+    });
+  } catch (error: any) {
+    return res.status(HTTP.BAD_REQUEST).json({
+      message: `Error calculating total quantity: ${error.message}`,
+    });
+  }
+};
+export const userTotalProduct = async (req: Request, res: Response) => {
+  try {
+    const { userID } = req.params;
+    const user = await userModel.findById(userID);
+    if (!user) {
+      console.log("u are not a user");
+    }
+    const totalUser = await productModel.countDocuments({ userID });
+    return res.status(HTTP.OK).json({
+      message: "total user Product gotten",
+      data: totalUser,
+    });
+  } catch (error) {
+    return res.status(HTTP.BAD_REQUEST).json({
+      message: `error getting total user Product`,
+    });
+  }
+};
+

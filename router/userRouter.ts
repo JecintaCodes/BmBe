@@ -4,6 +4,7 @@ import {
   deleteBuyerAndAdmin,
   getAllUser,
   getOneUser,
+  getTotalUser,
   registerAdmin,
   registerBuyer,
   registerUser,
@@ -47,5 +48,5 @@ userRouter.route("/:userID/update-info").patch(upload, updateUserInfo);
 userRouter.route("/search-users").get(searchDataBase);
 userRouter.route("/search-orders").get(searchOrder);
 userRouter.route("/search-list").get(searchListOrder);
-
+userRouter.route("/total-user").get(getTotalUser);
 export default userRouter;
