@@ -4,9 +4,12 @@ import serviceCategoryModel from "../model/serviceCategoryModel";
 
 export const createServiceCategory = async (req: Request, res: Response) => {
   try {
-    const { ServiceCategoryName } = req.body;
+    const { serviceCategoryName } = req.body;
+    if (!serviceCategoryModel) {
+      
+    }
     const service = await serviceCategoryModel.create({
-      ServiceCategoryName,
+      serviceCategoryName,
     });
     return res.status(HTTP.CREATED).json({
       message: "service category is created",
