@@ -7,7 +7,7 @@ import {
   getOneService,
   getOneUserServices,
 } from "../controller/servicesController";
-const upload = multer().single("image");
+const upload = multer().single("img");
 const servicesRouter = Router();
 
 servicesRouter.route("/:userID/register-services").post(upload, createServices);

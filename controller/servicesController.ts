@@ -86,7 +86,7 @@ export const createServices = async (req: Request, res: Response) => {
       description,
       url,
       serviceOwnerName: user.name,
-      images: secure_url,
+      img: secure_url,
       userID: user._id,
       category: category.serviceCategoryName,
     });

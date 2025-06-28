@@ -10,7 +10,7 @@ interface iServices {
   userID: string;
   amount: number;
   customerCode: string;
-  images: string;
+  img: string;
   users: {}[];
   payments: string[];
   orders: string[];
@@ -46,7 +46,7 @@ const serviceModel = new Schema<iServicesData>(
     amount: {
       type: Number,
     },
-    images: {
+    img: {
       type: String,
     },
     category: {

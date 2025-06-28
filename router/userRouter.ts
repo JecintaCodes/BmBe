@@ -5,6 +5,7 @@ import {
   getAllUser,
   getOneUser,
   getTotalUser,
+  getUserStore,
   registerAdmin,
   registerBuyer,
   registerUser,
@@ -49,4 +50,5 @@ userRouter.route("/search-users").get(searchDataBase);
 userRouter.route("/search-orders").get(searchOrder);
 userRouter.route("/search-list").get(searchListOrder);
 userRouter.route("/total-user").get(getTotalUser);
+userRouter.route("/:userID/user-store").get(getUserStore);
 export default userRouter;

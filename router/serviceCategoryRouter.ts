@@ -5,12 +5,13 @@ import {
   getAllServiceCategory,
 } from "../controller/serviceCategoryControllerf";
 // import serviceCategoryModel from "../model/serviceCategoryModel";
-
+import multer from "multer";
+const upload = multer().single("img");
 const serviceCategoryRouter = Router();
 
 serviceCategoryRouter
   .route("/create-service-category")
-  .post(createServiceCategory);
+  .post(upload,createServiceCategory);
 serviceCategoryRouter
   .route("/get-services-category")
   .get(getAllServiceCategory);

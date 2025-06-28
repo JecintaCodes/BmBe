@@ -1,15 +1,19 @@
 import { Request, Response } from "express";
 import { HTTP } from "../error/mainError";
 import serviceCategoryModel from "../model/serviceCategoryModel";
+import { streamUpload } from "../utils/stream";
 
 export const createServiceCategory = async (req: Request, res: Response) => {
   try {
     const { serviceCategoryName } = req.body;
+     const { secure_url,public_id }: any = await streamUpload(req);
     if (!serviceCategoryModel) {
       
     }
     const service = await serviceCategoryModel.create({
       serviceCategoryName,
+      img:secure_url,
+      imgID:public_id,
     });
     return res.status(HTTP.CREATED).json({
       message: "service category is created",

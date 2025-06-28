@@ -919,7 +919,7 @@ export const verifyServicePayment = async (req: Request, res: Response) => {
           description: service?.description,
           email: user.email,
           category: service?.category,
-          images: service?.images,
+          images: service?.img,
           amount: paymentData?.amount,
           customerCode: paymentData.customerCode,
           serviceOwnerName: service?.serviceOwnerName,
@@ -940,7 +940,7 @@ export const verifyServicePayment = async (req: Request, res: Response) => {
         customerCode: paymentData.customerCode,
         userID: paymentData.userID,
         category: service?.category,
-        images: service?.images,
+        images: service?.img,
         serviceOwnerName: service?.serviceOwnerName,
         orders: service?._id,
       });

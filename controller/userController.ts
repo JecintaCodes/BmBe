@@ -1105,3 +1105,33 @@ export const getTotalUser = async(req:Request, res:Response)=>{
     })
   }
 }
+
+export const getUserStore = async (req: Request, res: Response) => {
+  try {
+    // Assuming you pass a category ID in the URL (e.g., /categories/:id)
+    const { userID } = req.params;
+
+    // Find product by ID and populate its services
+    const user = await userModel.findById(userID).populate({
+      path: "myStore", // Make sure this matches the field name in category schema
+      options: {
+        sort: { createdAt: -1 }, // Sorting by creation date in descending order
+      },
+    });
+
+    if (!user) {
+      return res.status(HTTP.BAD_REQUEST).json({
+        message: "user store not found.",
+      });
+    }
+
+    return res.status(HTTP.CREATED).json({
+      message: "user store fetched successfully.",
+      data: user,
+    });
+  } catch (error: any) {
+    return res.status(HTTP.BAD_REQUEST).json({
+      message: `Error: ${error.message}`,
+    });
+  }
+};
