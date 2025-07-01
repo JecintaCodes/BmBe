@@ -5,6 +5,7 @@ import servicesModel from "../model/servicesModel";
 import { streamUpload } from "../utils/stream";
 import { role } from "../utils/role";
 import serviceCategoryModel from "../model/serviceCategoryModel";
+import { Types } from "mongoose";
 
 // export const createServices = async (req: Request, res: Response) => {
 //   try {
@@ -266,6 +267,49 @@ export const deleteService = async (req: Request, res: Response) => {
   } catch (error: any) {
     return res.status(HTTP.BAD_REQUEST).json({
       message: `error deleting service ${error?.message}`,
+    });
+  }
+};
+export const TotalService = async (req: Request, res: Response) => {
+  try {
+    const total = await servicesModel.countDocuments();
+    return res.status(HTTP.OK).json({
+      message: `total services gotten from the database`,
+      data: total,
+    });
+  } catch (error) {
+    return res.status(HTTP.BAD_REQUEST).json({
+      message: `error getting total services :${error} `,
+    });
+  }
+};
+export const userTotalServices = async (req: Request, res: Response) => {
+  try {
+    const { userID } = req.params;
+    // const user = await userModel.findById(userID);
+      // Validate userID
+    if (!userID || Types.ObjectId.isValid(userID)) {
+      return res.status(HTTP.BAD_REQUEST).json({
+        message: "Invalid userID",
+      });
+    }
+    
+
+       const user = await userModel.findById(userID);
+    if (!user) {
+      return res.status(HTTP.BAD_REQUEST).json({
+        message: "User not found",
+      });
+    }
+
+    const totalUser = await servicesModel.countDocuments({ userID });
+    return res.status(HTTP.OK).json({
+      message: "total user service gotten",
+      data: totalUser,
+    });
+  } catch (error) {
+    return res.status(HTTP.BAD_REQUEST).json({
+      message: `error getting total user Product`,
     });
   }
 };
